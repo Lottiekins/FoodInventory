@@ -1,46 +1,92 @@
+from django.db import models
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from django.db import models
+CustomUser = get_user_model()
+
+GRAM = 'g'
+KILOGRAM = 'Kg'
+MILLILITRE = 'mL'
+LITRE = 'L'
+weight_format_choices = (
+    (GRAM, 'Grams'),
+    (KILOGRAM, 'Kilograms'),
+    (MILLILITRE, 'Millilitre'),
+    (LITRE, 'Litre')
+)
 
 
 class Inventory(models.Model):
-    inventory_name = models.CharField(default='', max_length=200)
+    name = models.CharField(default='', max_length=200)
 
     class Meta:
         verbose_name = 'Inventory'
         verbose_name_plural = 'Inventories'
 
     def __str__(self):
-        return self.inventory_name
+        return self.name
+
+
+class Manufacturer(models.Model):
+    name = models.CharField(default='', max_length=200)
+
+    class Meta:
+        verbose_name = 'Manufacturer'
+        verbose_name_plural = 'Manufacturers'
+
+    def __str__(self):
+        return self.name
+
+
+class Brand(models.Model):
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE, related_name='manufacturer', default=None)
+    name = models.CharField(default='', max_length=200)
+
+    class Meta:
+        verbose_name = 'Brand'
+        verbose_name_plural = 'Brands'
+
+    def __str__(self):
+        return self.name
 
 
 class Item(models.Model):
-    item_name = models.CharField(default='', max_length=200)
-    item_total_weight = models.IntegerField(default=0)
-    item_portion_weight = models.IntegerField(default=0)
-    item_weight_format = models.CharField(default='g', max_length=6)
-    consume_within_days = models.IntegerField(default=0)
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='brand', default=None)
+    name = models.CharField(default='', max_length=200)
+    total_weight = models.IntegerField(default=0)
+    total_weight_format = models.CharField(default=GRAM, choices=weight_format_choices, max_length=2)
+    image = models.CharField(default=None, blank=True, null=True, max_length=2048)
+    portionable = models.BooleanField(default=False, blank=True)
+    portion_weight = models.IntegerField(default=None, blank=True, null=True)
+    portion_weight_format = models.CharField(default=GRAM, choices=weight_format_choices, max_length=2,
+                                             blank=True, null=True)
+    consume_within_x_days_of_opening = models.IntegerField(default=None, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Item Detail'
         verbose_name_plural = 'Item Details'
 
     def __str__(self):
-        return self.item_name
+        return self.name
 
 
 class InventoryItem(models.Model):
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    expiration_date = models.DateTimeField(default=timezone.now)
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name='inventory')
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='item')
     purchase_date = models.DateTimeField(default=timezone.now)
-    opened_date = models.DateTimeField(default=timezone.now)
-    consumption_date = models.DateTimeField(default=timezone.now)
-    consumed_by = models.CharField(default='', max_length=200)
+    expiration_date = models.DateTimeField(default=timezone.now)
+    opened = models.BooleanField(default=False, blank=True)
+    opened_date = models.DateTimeField(default=None, blank=True, null=True)
+    opened_by_id = models.ForeignKey(CustomUser, related_name='opened_by',
+                                     on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
+    consumed = models.BooleanField(default=False, blank=True)
+    consumption_date = models.DateTimeField(default=None, blank=True, null=True)
+    consumed_by_id = models.ForeignKey(CustomUser, related_name='consumed_by',
+                                       on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Item'
         verbose_name_plural = 'Items'
 
     def __str__(self):
-        return self.expiration_date, self.purchase_date, self.opened_date
+        return self.item.name
