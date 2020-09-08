@@ -21,6 +21,6 @@ from server.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('store_cupboard/', include('store_cupboard.urls')),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('api/', include('store_cupboard.urls')),
+    path('<path:url>/', TemplateView.as_view(template_name='home.html'), name='home'),
 ]
