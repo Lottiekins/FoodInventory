@@ -57,6 +57,7 @@ class Item(models.Model):
     total_weight_format = models.CharField(default=GRAM, choices=weight_format_choices, max_length=2)
     image = models.CharField(default=None, blank=True, null=True, max_length=2048)
     portionable = models.BooleanField(default=False, blank=True)
+    group_serving = models.IntegerField(default=None, blank=True, null=True)
     portion_weight = models.IntegerField(default=None, blank=True, null=True)
     portion_weight_format = models.CharField(default=GRAM, choices=weight_format_choices, max_length=2,
                                              blank=True, null=True)

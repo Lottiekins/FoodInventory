@@ -9,7 +9,7 @@ from .models import InventoryItem
 
 
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('manufacturer', 'name')
+    list_display = ('name', 'manufacturer')
 
 
 class ItemAdmin(admin.ModelAdmin):

@@ -15,9 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
+
+from server.views import *
 
 urlpatterns = [
-    path('', include('store_cupboard.urls')),
-    path('store_cupboard/', include('store_cupboard.urls')),
     path('admin/', admin.site.urls),
+    path('store_cupboard/', include('store_cupboard.urls')),
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
 ]

@@ -1,3 +1,5 @@
-/inventory/env/
+/backend/env/
 /venv/
 /.idea/
+/frontend/store-cupboard-ui/package-lock.json
+/backend/static/ang-src/
