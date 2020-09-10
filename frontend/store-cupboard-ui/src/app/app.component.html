@@ -167,39 +167,6 @@
     color: #125699;
   }
 
-  .terminal {
-    position: relative;
-    width: 80%;
-    max-width: 600px;
-    border-radius: 6px;
-    padding-top: 45px;
-    margin-top: 8px;
-    overflow: hidden;
-    background-color: rgb(15, 15, 16);
-  }
-
-  .terminal::before {
-    content: "\2022 \2022 \2022";
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 4px;
-    background: rgb(58, 58, 58);
-    color: #c2c3c4;
-    width: 100%;
-    font-size: 2rem;
-    line-height: 0;
-    padding: 14px 0;
-    text-indent: 4px;
-  }
-
-  .terminal pre {
-    font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace;
-    color: white;
-    padding: 0 1rem 1rem;
-    margin: 0;
-  }
-
   .circle-link {
     height: 40px;
     width: 40px;
@@ -270,8 +237,7 @@
   /* Responsive Styles */
   @media screen and (max-width: 767px) {
 
-    .card-container > *:not(.circle-link) ,
-    .terminal {
+    .card-container > *:not(.circle-link) {
       width: 100%;
     }
 
@@ -308,26 +274,15 @@
   <span>{{ title }}</span>
     <div class="spacer"></div>
     <a aria-label="Admin" target="_blank" rel="noopener" href="http://localhost:8000/admin/" title="Admin">
-      <span>Admin</span>
+      <span style="color: white; padding-right: 16px;">Admin</span>
     </a>
 </div>
 
 <div class="content" role="main">
 
-  <!-- Highlight Card -->
-  <div class="card highlight-card card-small">
-
-    <span>{{ title }} app is running!</span>
-
-    <svg id="rocket-smoke" alt="Rocket Ship Smoke" xmlns="http://www.w3.org/2000/svg" width="516.119" height="1083.632" viewBox="0 0 516.119 1083.632">
-      <path id="Path_40" data-name="Path 40" d="M644.6,141S143.02,215.537,147.049,870.207s342.774,201.755,342.774,201.755S404.659,847.213,388.815,762.2c-27.116-145.51-11.551-384.124,271.9-609.1C671.15,139.365,644.6,141,644.6,141Z" transform="translate(-147.025 -140.939)" fill="#f5f5f5"/>
-    </svg>
-
-  </div>
-
-  <!-- Terminal -->
-  <div class="terminal">
-      <pre>python manage.py runserver</pre>
+  <!-- Router -->
+  <div class="router-outlet" style="width: 100%;">
+    <router-outlet></router-outlet>
   </div>
 
   <svg id="clouds" alt="Gray Clouds Background" xmlns="http://www.w3.org/2000/svg" width="2611.084" height="485.677" viewBox="0 0 2611.084 485.677">

@@ -36,7 +36,13 @@ def add_item(request, barcode_data: str):
             if not manufacturer_created:
                 manufacturer.save()
 
-            brand_name = off_json['product']['brands']
+            brand_name = ''
+            try:
+                brand_name = off_json['product']['brands']
+                if brand_name == '':
+                    brand_name = 'brands-to-be-completed'
+            except KeyError:
+                brand_name = 'KeyError'
             brand, brand_created = Brand.objects.get_or_create(name=brand_name,
                                                                manufacturer=manufacturer)
             if not brand_created:
