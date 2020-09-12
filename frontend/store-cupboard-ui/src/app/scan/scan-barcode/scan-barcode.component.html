@@ -1,23 +1,15 @@
 <div *ngIf="availableDevices">
-  <select (change)="onDeviceSelectChange($event.target.value)">
-    <option value="" [selected]="!(selectedDevice$ | async)">No Device</option>
-    <option *ngFor="let device of availableDevices"
-            [value]="device.deviceId"
-            [selected]="(selectedDevice$ | async)
-            && device.deviceId === (selectedDevice$ | async).deviceId">{{ device.label }}</option>
-  </select>
-</div>
-
-<div style="width: 100%;" [hidden]="!hasCameras">
-  <zxing-scanner #scanner
-                 [device]="(selectedDevice$ | async)"
-                 [formats]="allowedFormats"
-                 (scanSuccess)="onCodeResult($event)"></zxing-scanner>
-  <h2 *ngIf="!(selectedDevice$ | async)">No camera selected.</h2>
-  <p>
-    Result:
-    <strong>{{ barcodeResultString }}</strong>
-  </p>
+  <label>
+    DeviceSelect:
+    <select (change)="onDeviceSelectChange($event.target.value)">
+      <option value=""
+              [selected]="!(selectedDevice$ | async)">No Device</option>
+      <option *ngFor="let device of availableDevices"
+              [value]="device.deviceId"
+              [selected]="(selectedDevice$ | async)
+              && device.deviceId === (selectedDevice$ | async).deviceId">{{ device.label }}</option>
+    </select>
+  </label>
 </div>
 
 <div *ngIf="!hasCameras && hasPermission === true">
@@ -33,6 +25,27 @@
 
 <div *ngIf="hasPermission === false">
   <h1>You denied the camera permissions, we can't scan anything without it. 😪</h1>
+</div>
+
+<div style="width: 100%;" [hidden]="!hasCameras">
+  <zxing-scanner #scanner
+                 [enable]="scannerEnabled"
+                 [device]="(selectedDevice$ | async)"
+                 [formats]="allowedFormats"
+                 [autofocusEnabled]="true"
+                 [torch]="torchEnabled"
+                 (torchCompatible)="onTorchCompatible($event)"
+                 (camerasFound)="camerasFoundHandler($event)"
+                 (camerasNotFound)="camerasNotFoundHandler($event)"
+                 (scanSuccess)="scanSuccessHandler($event)"
+                 (scanError)="scanErrorHandler($event)"
+                 (scanFailure)="scanFailureHandler($event)"
+                 (scanComplete)="scanCompleteHandler($event)"></zxing-scanner>
+  <h2 *ngIf="!(selectedDevice$ | async)">No camera selected.</h2>
+  <p>
+    Result:
+    <strong>{{ barcodeResultString }}</strong>
+  </p>
 </div>
 
 <audio #audioCheckoutBleep>

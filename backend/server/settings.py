@@ -26,9 +26,8 @@ SECRET_KEY = 'u&g+gmga%+wfisd%j0bfphn#ija8@&7tjdig!*adv4yz$%o0#q'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '*'
+    'localhost', '127.0.0.1', '[::1]', '192.168.*', '*'
 ]
-
 
 # Application definition
 REST_FRAMEWORK = {
@@ -50,8 +49,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'django.contrib.messages',
-    'store_cupboard',
+    'sslserver',
     'rest_framework',
+    'store_cupboard',
 ]
 
 MIDDLEWARE = [
@@ -78,7 +78,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
-            'debug': DEBUG,
         },
     },
 ]
@@ -95,7 +94,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -115,7 +113,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -129,7 +126,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
@@ -138,3 +134,10 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# SSL/HTTPS
+# https://docs.djangoproject.com/en/3.1/topics/security/
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True

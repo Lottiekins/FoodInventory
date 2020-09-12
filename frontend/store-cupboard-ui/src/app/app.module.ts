@@ -10,19 +10,21 @@ import { ScanModule } from "./scan/scan.module";
 import { ScanBackendService } from "./scan/service/scan-backend-service.service";
 
 import { AppComponent } from './app.component';
+import {CoreModule} from "./core/core.module";
 
 
 @NgModule({
   declarations: [
     AppComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    CommonModule,
-    HttpClientModule,
-    ScanModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        CommonModule,
+        HttpClientModule,
+        ScanModule,
+        CoreModule
+    ],
   providers: [ScanBackendService],
   bootstrap: [AppComponent]
 })
