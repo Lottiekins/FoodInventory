@@ -3,23 +3,19 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Django-ng</title>
-    <base href="/">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="{% static 'ang-src/favicon.ico' %}">
-    <link rel="stylesheet" href="{% static 'ang-src/styles.css' %}">
+  <meta charset="utf-8">
+  <title>StoreCupboardUi</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="{% static 'ang-src/favicon.ico' %}">
+  <link rel="stylesheet" href="{% static 'ang-src/styles.css' %}">
 </head>
-<body>
-    <app-root>
-        <div style="position:fixed; top:50%; left:50%; transform: translate(-50%, -50%); text-align: center;">
-            Loading...
-        </div>
-    </app-root>
-    <!-- <script type="text/javascript" src="{% static 'ang-src/4.js' %}"></script> -->
-    <script type="text/javascript" src="{% static 'ang-src/runtime.js' %}"></script>
-    <script type="text/javascript" src="{% static 'ang-src/polyfills.js' %}"></script>
-    <script type="text/javascript" src="{% static 'ang-src/main.js' %}"></script>
+<body class="d-flex flex-column">
+  <div class="flex-grow-1">
+    <app-root class="flex-grow-1"></app-root>
+  </div>
+  <script type="text/javascript" src="{% static 'ang-src/runtime.js' %}"></script>
+  <script type="text/javascript" src="{% static 'ang-src/polyfills.js' %}"></script>
+  <script type="text/javascript" src="{% static 'ang-src/main.js' %}"></script>
 </body>
 </html>
