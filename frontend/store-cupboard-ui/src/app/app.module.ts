@@ -5,12 +5,14 @@ import { HttpClientModule } from "@angular/common/http";
 
 import { AppRoutingModule } from './app-routing.module';
 
+import { CoreModule } from "./core/core.module";
+import { ItemModule } from "./item/item.module";
+import { InventoryModule } from "./inventory/inventory.module";
 import { ScanModule } from "./scan/scan.module";
 
-import { ScanBackendService } from "./scan/service/scan-backend-service.service";
+import { ScanBackendService } from "./scan/services/scan-backend-service.service";
 
 import { AppComponent } from './app.component';
-import { CoreModule } from "./core/core.module";
 
 
 @NgModule({
@@ -22,8 +24,10 @@ import { CoreModule } from "./core/core.module";
     AppRoutingModule,
     CommonModule,
     HttpClientModule,
-    ScanModule,
     CoreModule,
+    ItemModule,
+    InventoryModule,
+    ScanModule
   ],
   providers: [ScanBackendService],
   bootstrap: [AppComponent]

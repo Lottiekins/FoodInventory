@@ -20,8 +20,7 @@ from django.views.generic import TemplateView
 from server.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('store_cupboard.urls')),
-    path('scan/', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('admin', admin.site.urls),
+    path('api/v1/', include('store_cupboard.urls')),
     re_path(r'^.*$', TemplateView.as_view(template_name='home.html'), name='home'),
 ]

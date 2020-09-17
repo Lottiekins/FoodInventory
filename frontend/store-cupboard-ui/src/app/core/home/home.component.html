@@ -5,13 +5,15 @@
       <h1 class="display-4">Welcome to <b>Pantry</b>!</h1>
       <div class="d-flex justify-content-between">
         <div class="d-flex align-self-center w-auto">
-          <p class="lead my-1">
-            Tracking the groceries in your fridge, freezer, and pantry is simple with <b>Pantry</b>!
-          </p>
-          <p class="lead my-1">
-            It provides shopping list capabilities, as well as allowing you to scan barcodes on individual
-            products for easier entry.
-          </p>
+          <div>
+            <p class="lead my-1">
+              Tracking the groceries in your fridge, freezer, and pantry is simple with <b>Pantry</b>!
+            </p>
+            <p class="lead my-1">
+              It provides shopping list capabilities, as well as allowing you to scan barcodes on individual
+              products for easier entry.
+            </p>
+          </div>
         </div>
         <div class="w-auto d-none d-sm-block">
           <div class="d-flex justify-content-center h-100">
@@ -33,7 +35,7 @@
     <hr class="my-4">
 
     <div class="d-flex justify-content-end">
-      <a class="btn btn-primary btn-lg" href="#" role="button">Browse Inventories</a>
+      <a class="btn btn-primary btn-lg" role="button" [routerLink]="'/inventories'">Browse Inventories</a>
     </div>
 
   </div>

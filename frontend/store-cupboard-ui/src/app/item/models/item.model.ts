@@ -1,4 +1,5 @@
 export interface Item {
+  id: number;
   brandId: number;
   name: string;
   total_weight: number | null;

@@ -5,13 +5,31 @@ from rest_framework import viewsets, permissions
 import requests
 import json
 
-from .models import Item, Brand, Manufacturer, GRAM
+from .models import Item, Brand, Manufacturer, GRAM, Inventory
 from .serializers import ItemSerializer
 
 
 class ItemViewSet(viewsets.ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+
+def get_inventories(request):
+    if request.method == 'GET':
+        try:
+            response = list(Inventory.objects.values())
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No item with that name'}])
+    return HttpResponse(json.dumps(response), content_type="application/json")
+
+
+def get_items(request):
+    if request.method == 'GET':
+        try:
+            response = list(Item.objects.values())
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No item with that name'}])
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 def get_item(request, item_id: str):

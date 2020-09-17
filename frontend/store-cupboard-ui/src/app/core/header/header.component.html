@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 
-  <a class="navbar-brand" href="#">
+  <a class="navbar-brand" [routerLink]="['/']">
     <img src="./static/ang-src/assets/images/pantry-egg-brand.png" width="30" height="30" class="d-inline-block align-top" alt="" loading="lazy">
     Pantry
   </a>
@@ -13,10 +13,10 @@
   <div [ngbCollapse]="isMenuCollapsed" class="collapse navbar-collapse">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item">
-        <a class="nav-link" [routerLink]="['']">Inventories</a>
+        <a class="nav-link" [routerLink]="['/inventories']" [routerLinkActive]="'active'">Inventories</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" [routerLink]="['']">Items</a>
+        <a class="nav-link" [routerLink]="['/items']" [routerLinkActive]="'active'">Items</a>
       </li>
     </ul>
     <!--

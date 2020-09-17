@@ -86,8 +86,8 @@ class InventoryItem(models.Model):
                                        on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
 
     class Meta:
-        verbose_name = 'Item'
-        verbose_name_plural = 'Items'
+        verbose_name = 'Inventoried Item'
+        verbose_name_plural = 'Inventoried Items'
 
     def __str__(self):
         return self.item.name

@@ -3,7 +3,7 @@ import { interval, Observable, of } from 'rxjs';
 import { debounce, map, take } from "rxjs/operators";
 import { BarcodeFormat } from '@zxing/library';
 import { ZXingScannerComponent } from "@zxing/ngx-scanner";
-import { ScanBackendService } from "../service/scan-backend-service.service";
+import { ScanBackendService } from "../services/scan-backend-service.service";
 
 
 @Component({
