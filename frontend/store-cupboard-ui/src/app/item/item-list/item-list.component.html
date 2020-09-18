@@ -1,23 +1,37 @@
 <div class="d-flex justify-content-center">
   <div class="w-75">
-    <h1>Items</h1>
+    <div class="d-flex justify-content-between">
+      <h1>Items</h1>
+      <div class="mt-2">
+        <button type="button" class="btn btn-primary" (click)="openScanningModal()">
+          <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Add Item
+        </button>
+      </div>
+    </div>
     <div class="card-columns">
       <ng-template ngFor [ngForOf]="items$ | async" let-item let-i="index">
         <div class="card">
-          <div class="d-flex justify-content-center">
-            <img class="card-img-top" alt="pantry egg logo"
-                 src="{{ item.image }}">
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{{ item.name }}</h5>
-            <!--
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-            -->
+          <div class="d-flex flex-row">
+            <div class="d-flex justify-content-center w-50">
+              <div class="d-flex align-self-center">
+                <img class="card-img-top" alt="pantry egg logo"
+                     src="{{ item.image }}">
+              </div>
+            </div>
+            <div class="card-body w-50">
+              <h6 class="card-title">{{ item.name }}</h6>
+              <p class="card-text">
+                <span class="badge badge-info">Portionable</span> {{ item.group_serving }} Servings
+              </p>
+              <p class="card-text">
+                <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
+              </p>
+            </div>
           </div>
           <div class="card-footer">
             <div class="d-flex justify-content-between">
               <small class="text-muted">#{{ i }}</small>
-              <a [routerLink]="['/item/' + item.id]" class="btn btn-primary">Details</a>
+              <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-primary">Details</a>
             </div>
           </div>
         </div>
@@ -25,3 +39,20 @@
     </div>
   </div>
 </div>
+
+
+
+<ng-template #barcodeScanner>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Scan Barcode</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeScanningModal('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <app-scan-barcode></app-scan-barcode>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="closeScanningModal('Close button click')">Close</button>
+  </div>
+</ng-template>

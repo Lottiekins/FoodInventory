@@ -13,12 +13,12 @@ export class ScanBackendService {
   }
 
   getItem(itemId: number): Observable<Item[]> {
-    let url = `https://192.168.1.13:8000/api/item/get/${itemId}`;
+    let url = `https://192.168.1.13:8000/api/v1/item/get/${itemId}`;
     return this.http.get<Item[]>(url);
   }
 
   addItem(barcodeData: string): Observable<any> {
-    let url = `https://192.168.1.13:8000/api/item/add/${barcodeData}`;
+    let url = `https://192.168.1.13:8000/api/v1/item/add/${barcodeData}`;
     return this.http.get<any>(url);
   }
 

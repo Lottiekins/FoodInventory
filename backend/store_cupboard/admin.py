@@ -14,7 +14,7 @@ class BrandAdmin(admin.ModelAdmin):
 
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('brand', 'name', 'total_weight', 'total_weight_format',
-                    'portionable', 'portion_weight', 'consume_within_x_days_of_opening')
+                    'portionable', 'group_serving', 'portion_weight', 'consume_within_x_days_of_opening')
     list_filter = ('total_weight_format', 'portionable')
 
 

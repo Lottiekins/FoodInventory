@@ -1,9 +1,16 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { interval, Observable, of } from 'rxjs';
-import { debounce, map, take } from "rxjs/operators";
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import { interval, Observable, of, throwError } from 'rxjs';
+import { catchError, debounce, map, take } from "rxjs/operators";
+
 import { BarcodeFormat } from '@zxing/library';
 import { ZXingScannerComponent } from "@zxing/ngx-scanner";
+
+import { faLightbulb as fasLightbulb } from '@fortawesome/free-solid-svg-icons';
+import { faLightbulb as farLightbulb } from '@fortawesome/free-regular-svg-icons';
+
 import { ScanBackendService } from "../services/scan-backend-service.service";
+import {ItemService} from "../../item/services/item.service";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 
 
 @Component({
@@ -18,9 +25,13 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
 
   @ViewChild('audioCheckoutBleep')
   audioPlayerRef: ElementRef;
+  audioPlay$: Promise<any>;
 
   scannerEnabled: boolean = true;
+  isTorchCompatible: boolean = false;
   torchEnabled: boolean = false;
+  fasLightbulb = fasLightbulb;
+  farLightbulb = farLightbulb;
   hasCameras: boolean = false;
   hasPermission: boolean = false;
   availableDevices: MediaDeviceInfo[];
@@ -45,8 +56,11 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
     BarcodeFormat.UPC_EAN_EXTENSION
   ];
   barcodeResultString: string = '';
+  badgeClass: string = '';
+  badgeString: string = '';
 
-  constructor(private scanBackendService: ScanBackendService) {
+  constructor(private scanBackendService: ScanBackendService,
+              private ngbModalService: NgbModal) {
   }
 
   ngOnInit(): void {
@@ -63,7 +77,12 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
     this.selectedDevice$ = of(this.availableDevices.find(device => device.deviceId == selectedValue));
   }
 
-  onTorchCompatible(event) {
+  onTorchCompatible(event: boolean) {
+    this.isTorchCompatible = event;
+  }
+
+  toggleTorch() {
+    this.torchEnabled = !this.torchEnabled;
   }
 
   camerasFoundHandler(devices: MediaDeviceInfo[]) {
@@ -78,39 +97,54 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
   }
 
   camerasNotFoundHandler(event) {
-    console.error('An error has occurred when trying to enumerate your video-stream-enabled devices.');
+    console.error('An error has occurred when trying to enumerate your video-stream-enabled devices.', event);
     this.hasCameras = false;
     this.availableDevices = [];
   }
 
   scanSuccessHandler(barcodeData: string) {
     this.onAudioPlay();
-    this.barcodeResultString = barcodeData + ' [FINDING]';
+    this.barcodeResultString = barcodeData;
+    this.badgeClass = 'badge-info'
+    this.badgeString = 'FINDING'
     this.scanBackendService.addItem(barcodeData).pipe(
-      debounce(() => interval(1000)),
+      debounce(() => interval(2000)),
       take(1),
       map(data => {
         console.log('scanBackendService:', data);
         if (data?.item_added) {
-          this.barcodeResultString = data.item_added[0].name + ' [ADDED]';
+          this.barcodeResultString = data.item_added[0].name;
+          this.badgeClass = 'badge-success'
+          this.badgeString = 'ADDED'
+          this.ngbModalService.dismissAll('Item Scanned Successfully');
         } else if (data?.item_not_added) {
-          this.barcodeResultString = data.item_not_added.code + ' [FAILED]';
+          this.barcodeResultString = data.item_not_added.code;
+          this.badgeClass = 'badge-danger'
+          this.badgeString = 'FAILED'
         }
+      }),
+      catchError(err => {
+        this.barcodeResultString = err;
+        this.badgeClass = 'badge-danger'
+        this.badgeString = 'ERROR'
+        console.warn('[ERROR] ', err);
+        return throwError(err);
       })
     ).subscribe();
   }
 
   scanErrorHandler(event) {
-  }
-
-  scanFailureHandler(event) {
-  }
-
-  scanCompleteHandler(event) {
+    console.error('[ERROR] scanErrorHandler:', event);
   }
 
   onAudioPlay() {
-    this.audioPlayerRef.nativeElement.play();
+    this.audioPlay$ = this.audioPlayerRef.nativeElement.play();
+    if (this.audioPlay$ != undefined) {
+      this.audioPlay$.then(() => {
+      }).catch(error => {
+        console.error('[ERROR] onAudioPlay:', error);
+      });
+    }
   }
 
 }
