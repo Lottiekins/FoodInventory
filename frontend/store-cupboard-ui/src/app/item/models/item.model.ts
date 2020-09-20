@@ -1,5 +1,6 @@
 export interface Item {
   id: number;
+  barcode: number;
   brandId: number;
   name: string;
   total_weight: number | null;
@@ -12,14 +13,16 @@ export interface Item {
   consume_within_x_days_of_opening: number | null;
 }
 
-export interface ItemAdded {
-  item_added: Item[]
+export enum WeightFormatEnum {
+  GRAM = 'g',
+  KILOGRAM = 'Kg',
+  MILLILITRE = 'mL',
+  LITRE = 'L'
 }
 
-export interface ItemNotAdded {
-  item_not_added: {
-    status_verbose: string,
-    status: number,
-    code: string
-  }
+export enum WeightFormatChoicesEnum {
+  GRAM = 'Grams',
+  KILOGRAM = 'Kilograms',
+  MILLILITRE = 'Millilitre',
+  LITRE = 'Litre'
 }

@@ -1,4 +1,5 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy,
+         Output, ViewChild, ElementRef, EventEmitter, isDevMode } from '@angular/core';
 import { interval, Observable, of, throwError } from 'rxjs';
 import { catchError, debounce, map, take } from "rxjs/operators";
 
@@ -8,9 +9,9 @@ import { ZXingScannerComponent } from "@zxing/ngx-scanner";
 import { faLightbulb as fasLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb as farLightbulb } from '@fortawesome/free-regular-svg-icons';
 
-import { ScanBackendService } from "../services/scan-backend-service.service";
-import {ItemService} from "../../item/services/item.service";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import { OpenFoodFactsService } from "../services/openfoodfacts.service";
+
+import { ProductQuery } from "../models/openfoodfacts.modal";
 
 
 @Component({
@@ -18,7 +19,9 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
   templateUrl: './scan-barcode.component.html',
   styleUrls: ['./scan-barcode.component.scss']
 })
-export class ScanBarcodeComponent implements OnInit, AfterViewInit {
+export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  @Output() newProductQueryEvent: EventEmitter<ProductQuery> = new EventEmitter<ProductQuery>();
 
   @ViewChild('scanner')
   scanner: ZXingScannerComponent;
@@ -26,6 +29,7 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
   @ViewChild('audioCheckoutBleep')
   audioPlayerRef: ElementRef;
   audioPlay$: Promise<any>;
+  audioCheckoutBleepSrc: string;
 
   scannerEnabled: boolean = true;
   isTorchCompatible: boolean = false;
@@ -59,11 +63,12 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
   badgeClass: string = '';
   badgeString: string = '';
 
-  constructor(private scanBackendService: ScanBackendService,
-              private ngbModalService: NgbModal) {
+  constructor(private openFoodFactsService: OpenFoodFactsService) {
   }
 
   ngOnInit(): void {
+    this.audioCheckoutBleepSrc = isDevMode() ? 'assets/audio/Checkout%20Scanner%20Beep-SoundBible.com-593325210.mp3'
+                                             : '/static/ang-src/assets/audio/Checkout%20Scanner%20Beep-SoundBible.com-593325210.mp3';
   }
 
   ngAfterViewInit(): void {
@@ -72,17 +77,8 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onDeviceSelectChange(selectedValue: string) {
-    console.log('Selection changed: ', selectedValue);
-    this.selectedDevice$ = of(this.availableDevices.find(device => device.deviceId == selectedValue));
-  }
-
-  onTorchCompatible(event: boolean) {
-    this.isTorchCompatible = event;
-  }
-
-  toggleTorch() {
-    this.torchEnabled = !this.torchEnabled;
+  ngOnDestroy(): void {
+    this.scanner = undefined;
   }
 
   camerasFoundHandler(devices: MediaDeviceInfo[]) {
@@ -96,38 +92,57 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onDeviceSelectChange(selectedValue: string) {
+    console.log('Selection changed: ', selectedValue);
+    this.selectedDevice$ = of(this.availableDevices.find(device => device.deviceId == selectedValue));
+  }
+
   camerasNotFoundHandler(event) {
     console.error('An error has occurred when trying to enumerate your video-stream-enabled devices.', event);
     this.hasCameras = false;
     this.availableDevices = [];
   }
 
+  onTorchCompatible(event: boolean) {
+    this.isTorchCompatible = event;
+  }
+
+  toggleTorch() {
+    this.torchEnabled = !this.torchEnabled;
+  }
+
   scanSuccessHandler(barcodeData: string) {
-    this.onAudioPlay();
     this.barcodeResultString = barcodeData;
-    this.badgeClass = 'badge-info'
-    this.badgeString = 'FINDING'
-    this.scanBackendService.addItem(barcodeData).pipe(
-      debounce(() => interval(2000)),
+    this.audioCheckoutBleepPlay();
+    this.badgeClass = 'badge-info';
+    this.badgeString = 'FINDING';
+
+    this.openFoodFactsService.getProduct(barcodeData).pipe(
+      debounce(() => interval(5000)),
       take(1),
-      map(data => {
+      map((data: ProductQuery) => {
         console.log('scanBackendService:', data);
-        if (data?.item_added) {
-          this.barcodeResultString = data.item_added[0].name;
-          this.badgeClass = 'badge-success'
-          this.badgeString = 'ADDED'
-          this.ngbModalService.dismissAll('Item Scanned Successfully');
-        } else if (data?.item_not_added) {
-          this.barcodeResultString = data.item_not_added.code;
-          this.badgeClass = 'badge-danger'
-          this.badgeString = 'FAILED'
+        if (data.product != undefined) {
+          console.log('[SUCCESS] ', data.product);
+          this.barcodeResultString = data.product.product_name;
+          this.badgeClass = 'badge-success';
+          this.badgeString = 'SUCCESS';
+
+          // Emit the data - parent component will close the modal
+          this.newProductQueryEvent.emit(data);
+
+        } else {
+          console.warn('[FAILED] ', data.status_verbose);
+          this.barcodeResultString = data.status_verbose;
+          this.badgeClass = 'badge-danger';
+          this.badgeString = 'FAILED';
         }
       }),
       catchError(err => {
         this.barcodeResultString = err;
         this.badgeClass = 'badge-danger'
         this.badgeString = 'ERROR'
-        console.warn('[ERROR] ', err);
+        console.error('[ERROR] ', err);
         return throwError(err);
       })
     ).subscribe();
@@ -137,7 +152,7 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit {
     console.error('[ERROR] scanErrorHandler:', event);
   }
 
-  onAudioPlay() {
+  audioCheckoutBleepPlay() {
     this.audioPlay$ = this.audioPlayerRef.nativeElement.play();
     if (this.audioPlay$ != undefined) {
       this.audioPlay$.then(() => {

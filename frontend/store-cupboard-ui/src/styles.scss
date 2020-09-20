@@ -1,14 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
-@import '~bootstrap/dist/css/bootstrap.min.css';
+@import "~bootswatch/dist/darkly/bootstrap.min.css";
 
 /* Importing Bootstrap SCSS file. */
-@import '~bootstrap/scss/bootstrap';
+@import "~bootswatch/dist/darkly/variables";
+@import "~bootstrap/scss/bootstrap";
+@import "~bootswatch/dist/darkly/bootswatch";
 
 html, body {
   height: 100%;
-}
-
-body {
-  background: #fff;
-  background: linear-gradient(to bottom, #eee, #fff);
 }

@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from "@angular/router";
 
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
@@ -15,6 +16,7 @@ import { ItemListComponent } from './item-list/item-list.component';
   declarations: [ItemListComponent],
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     RouterModule,
     ItemRoutingModule,
     FontAwesomeModule,

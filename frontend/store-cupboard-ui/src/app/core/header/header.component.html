@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 
   <a class="navbar-brand" [routerLink]="['/']">
-    <img src="./static/ang-src/assets/images/pantry-egg-brand.png" width="30" height="30" class="d-inline-block align-top" alt="" loading="lazy">
+    <img [src]="brandLogoSrc" width="30" height="30" class="d-inline-block align-top" alt="" loading="lazy">
     Pantry
   </a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
@@ -19,6 +19,10 @@
         <a class="nav-link" [routerLink]="['/items']" [routerLinkActive]="'active'">Items</a>
       </li>
     </ul>
+    <div class="">
+      <button type="button" class="btn btn-danger btn-sm"
+              (click)="openAdminPanel()">Admin</button>
+    </div>
     <!--
     <form class="form-inline my-2 my-lg-0">
       <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">

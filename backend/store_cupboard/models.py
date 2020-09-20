@@ -51,6 +51,7 @@ class Brand(models.Model):
 
 
 class Item(models.Model):
+    barcode = models.IntegerField(default=None, blank=True, null=True)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='brand', default=None)
     name = models.CharField(default='', max_length=200)
     total_weight = models.IntegerField(default=0)

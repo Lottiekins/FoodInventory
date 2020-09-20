@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ScanBackendService } from './scan-backend-service.service';
+import { WikipediaApiService } from './wikipedia-api.service';
 
-describe('ScanServiceService', () => {
-  let service: ScanBackendService;
+describe('WikipediaApiService', () => {
+  let service: WikipediaApiService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ScanBackendService);
+    service = TestBed.inject(WikipediaApiService);
   });
 
   it('should be created', () => {

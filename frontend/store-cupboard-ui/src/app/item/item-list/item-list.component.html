@@ -2,9 +2,9 @@
   <div class="w-75">
     <div class="d-flex justify-content-between">
       <h1>Items</h1>
-      <div class="mt-2">
-        <button type="button" class="btn btn-primary" (click)="openScanningModal()">
-          <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Add Item
+      <div class="d-flex align-items-center">
+        <button type="button" class="btn btn-secondary" (click)="openScanningModal()">
+          <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Scan Barcode
         </button>
       </div>
     </div>
@@ -41,18 +41,123 @@
 </div>
 
 
-
 <ng-template #barcodeScanner>
   <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Scan Barcode</h4>
+    <h4 class="modal-title" id="modal-barcodeScanner">Scan Barcode</h4>
     <button type="button" class="close" aria-label="Close" (click)="closeScanningModal('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
-    <app-scan-barcode></app-scan-barcode>
+    <app-scan-barcode (newProductQueryEvent)="onEmitNewProductQueryEvent($event)"></app-scan-barcode>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-dark" (click)="closeScanningModal('Close button click')">Close</button>
+    <button type="button" class="btn btn-secondary" (click)="closeScanningModal('Close button click')">Close</button>
+  </div>
+</ng-template>
+
+
+<ng-template #addItemDialog>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-addItemDialog">Add Item</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeScanningModal('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="addItemForm">
+      <div class="form-group">
+        <label for="barcode">Barcode:</label>
+        <input id="barcode" class="form-control" formControlName="barcode">
+      </div>
+      <div class="form-group">
+        <div class="d-flex justify-content-between">
+          <div class="flex-fill">
+            <label for="manufacturer">Manufacturer:</label>
+            <input id="manufacturer" class="form-control" formControlName="brands">
+          </div>
+          <div class="d-flex align-self-end ml-2">
+            <button type="button" class="btn btn-outline-warning" aria-label="Close"
+                    (click)="findManufacturerName()">
+              <fa-icon [icon]="faSearchengin"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="d-flex justify-content-between">
+          <div class="flex-fill">
+            <label for="brands">Brand Name(s):</label>
+            <input id="brands" class="form-control" formControlName="brands">
+          </div>
+          <div class="d-flex align-self-end ml-2">
+            <button type="button" class="btn btn-outline-warning" aria-label="Close"
+                    (click)="findBrandName()">
+              <fa-icon [icon]="faSearchengin"></fa-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="name">Product Name:</label>
+        <input id="name" class="form-control" formControlName="name">
+      </div>
+      <div class="form-group">
+        <div class="d-flex justify-content-between">
+          <div class="w-75">
+            <label for="image">Product Image:</label>
+            <input id="image" class="form-control" formControlName="image">
+          </div>
+          <div class="d-flex flex-fill w-25 ml-2">
+            <img class="img-fluid img-thumbnail" [src]="addItemForm.get('image').value" alt="Product Image">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="total_weight" class="control-label">Total Weight:</label>
+        <div class="form-group">
+          <div class="input-group mb-3">
+            <input id="total_weight" type="text" class="form-control" aria-label="Total Weight"
+                   formControlName="total_weight">
+            <div class="input-group-append">
+              <span class="input-group-text">{{ addItemForm.get("total_weight_format").value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="portionable"
+                 [checked]=""
+                 (change)="togglePortionableFields()">
+          <label class="custom-control-label" for="portionable">Portionable</label>
+        </div>
+      </div>
+      <ng-container *ngIf="showPortionableFields">
+        <div class="form-group">
+          <label for="group_serving">Group Serving:</label>
+          <input id="group_serving" class="form-control" formControlName="group_serving">
+        </div>
+        <div class="form-group">
+          <label for="portion_weight" class="control-label">Portion Weight:</label>
+          <div class="form-group">
+            <div class="input-group mb-3">
+              <input id="portion_weight" type="text" class="form-control" aria-label="Portion Weight"
+                     formControlName="portion_weight">
+              <div class="input-group-append">
+                <span class="input-group-text">{{ addItemForm.get("portion_weight_format").value }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+      <div class="form-group">
+        <label for="consume_within_x_days_of_opening">Consume Within ('X' Days of Opening):</label>
+        <input id="consume_within_x_days_of_opening" class="form-control" formControlName="consume_within_x_days_of_opening">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeScanningModal('Close button click')">Close</button>
   </div>
 </ng-template>

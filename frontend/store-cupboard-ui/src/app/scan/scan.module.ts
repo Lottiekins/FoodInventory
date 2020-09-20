@@ -3,21 +3,21 @@ import { CommonModule } from '@angular/common';
 import { ScanRoutingModule } from "./scan-routing.module";
 import { ScanBarcodeComponent } from './scan-barcode/scan-barcode.component';
 import { ZXingScannerModule } from "@zxing/ngx-scanner";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 
 
 @NgModule({
-    declarations: [
-        ScanBarcodeComponent
-    ],
-    exports: [
-        ScanBarcodeComponent
-    ],
+  declarations: [
+    ScanBarcodeComponent
+  ],
   imports: [
     CommonModule,
     ScanRoutingModule,
     ZXingScannerModule,
     FontAwesomeModule
+  ],
+  exports: [
+    ScanBarcodeComponent
   ]
 })
 export class ScanModule { }

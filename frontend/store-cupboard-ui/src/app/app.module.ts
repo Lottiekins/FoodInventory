@@ -12,7 +12,8 @@ import { SharedModule } from "./shared/shared.module";
 import { ItemModule } from "./item/item.module";
 import { InventoryModule } from "./inventory/inventory.module";
 
-import { ScanBackendService } from "./scan/services/scan-backend-service.service";
+import { OpenFoodFactsService } from "./scan/services/openfoodfacts.service";
+import { WikipediaApiService } from "./scan/services/wikipedia-api.service";
 
 import { AppComponent } from './app.component';
 
@@ -32,7 +33,10 @@ import { AppComponent } from './app.component';
     InventoryModule,
     FontAwesomeModule
   ],
-  providers: [ScanBackendService],
+  providers: [
+    OpenFoodFactsService,
+    WikipediaApiService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
