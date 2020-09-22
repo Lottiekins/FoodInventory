@@ -10,10 +10,9 @@
   <link rel="icon" type="image/x-icon" href="{% static 'ang-src/favicon.ico' %}">
   <link rel="stylesheet" href="{% static 'ang-src/styles.css' %}">
 </head>
-<body class="d-flex flex-column">
-  <div class="flex-grow-1">
-    <app-root class="flex-grow-1"></app-root>
-  </div>
+<body class="d-flex flex-column flex-grow-1">
+  <app-root class="d-flex flex-column flex-grow-1"></app-root>
+  <script type="text/javascript">localStorage.setItem('csrf_token', '{{ csrf_token }}');</script>
   <script type="text/javascript" src="{% static 'ang-src/runtime.js' %}" defer></script>
   <script type="text/javascript" src="{% static 'ang-src/polyfills.js' %}" defer></script>
   <script type="text/javascript" src="{% static 'ang-src/main.js' %}" defer></script>

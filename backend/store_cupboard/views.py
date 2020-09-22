@@ -1,17 +1,12 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
-from rest_framework import viewsets, permissions
+from django.views.decorators.csrf import csrf_exempt
+from requests.utils import requote_uri
 
 import requests
 import json
 
 from .models import Item, Brand, Manufacturer, GRAM, Inventory
-from .serializers import ItemSerializer
-
-
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
 
 
 def get_inventories(request):
@@ -21,6 +16,25 @@ def get_inventories(request):
         except ObjectDoesNotExist:
             response = json.dumps([{'Error': 'No item with that name'}])
     return HttpResponse(json.dumps(response), content_type="application/json")
+
+
+def add_inventory(request):
+    response = json.dumps({})
+    if request.method == 'POST':
+        inventory_name = request.body.decode("utf-8")
+        if not len(inventory_name) == 0:
+            inventory, inventory_created = Inventory.objects.get_or_create(name=inventory_name)
+            print('inventory_name:', inventory_name, '; inventory_created:', inventory_created)
+            if inventory_created:
+                inventory.save()
+                return HttpResponse(json.dumps({'inventory_name': inventory_name,
+                                                'inventory_created': inventory_created}),
+                                    content_type="application/json")
+        print('inventory_name:', inventory_name, '; inventory_created:', False)
+        return HttpResponse(json.dumps({'inventory_name': inventory_name,
+                                        'inventory_created': False}),
+                            content_type="application/json")
+    return JsonResponse(response)
 
 
 def get_items(request):
@@ -46,6 +60,36 @@ def get_openfoodfacts_from_barcode_data(request, barcode_data: str):
     return JsonResponse(response)
 
 
+def get_wikipedia_opensearch(request, search_term: str):
+    url = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + \
+          requote_uri(search_term) + '&format=json'
+    response = json.dumps({})
+    if request.method == 'GET':
+        off_request = requests.get(url)
+        off_json = off_request.json()
+        if off_json[0] != off_json[1][0]:
+            url = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' \
+                  + requote_uri(off_json[1][0]) + '&format=json'
+            off_request = requests.get(url)
+            off_json = off_request.json()
+        return JsonResponse({'opensearch': off_json})
+    return JsonResponse(response)
+
+
+def get_wikipedia_extracts(request, search_term: str):
+    url = 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles='\
+          + requote_uri(search_term) + '&format=json'
+    response = json.dumps({})
+    if request.method == 'GET':
+        off_request = requests.get(url)
+        off_json = off_request.json()
+        pages = off_json['query']['pages']
+        page_ids = list(pages.keys())[0]
+        extract = off_json['query']['pages'][page_ids]['extract']
+        return JsonResponse({'extract': extract})
+    return JsonResponse(response)
+
+
 def get_item(request, item_id: str):
     response = json.dumps([{}])
     if request.method == 'GET':
@@ -56,79 +100,12 @@ def get_item(request, item_id: str):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
-def add_item(request, barcode_data: str):
-    url = 'https://world.openfoodfacts.org/api/v0/product/' + barcode_data + '.json'
+def add_item(request, new_item: Item):
     response = json.dumps([{}])
-    if request.method == 'GET':
-        # open food facts API - https://wiki.openfoodfacts.org/API
-        off_request = requests.get(url)
-        off_json = off_request.json()
-        if off_request.status_code == 200 and off_json['status_verbose'] == 'product found':
-
-            manufacturer_name = ''
-            try:
-                manufacturer_name = off_json['product']['brands']
-                if manufacturer_name == '':
-                    manufacturer_name = 'manufacturer-to-be-completed'
-            except KeyError:
-                manufacturer_name = 'KeyError'
-            manufacturer, manufacturer_created = Manufacturer.objects.get_or_create(name=manufacturer_name)
-            if not manufacturer_created:
-                manufacturer.save()
-
-            brand_name = ''
-            try:
-                brand_name = off_json['product']['brands']
-                if brand_name == '':
-                    brand_name = 'brands-to-be-completed'
-            except KeyError:
-                brand_name = 'KeyError'
-            brand, brand_created = Brand.objects.get_or_create(name=brand_name,
-                                                               manufacturer=manufacturer)
-            if not brand_created:
-                brand.save()
-
-            product_name = ''
-            try:
-                product_name = off_json['product']['product_name']
-            except KeyError:
-                try:
-                    product_name = off_json['product']['product_name_en']
-                except KeyError:
-                    product_name = 'KeyError'
-            item, item_created = Item.objects.get_or_create(name=product_name,
-                                                            brand=brand)
-            if not item_created:
-                item.name = product_name
-                item.total_weight = 0
-                item.total_weight_format = GRAM
-
-                image_url = ''
-                try:
-                    image_url = off_json['product']['selected_images']['front']['display'][0]
-                except KeyError:
-                    image_url = 'KeyError'
-                item.image = image_url
-
-                group_serving = 0
-                try:
-                    group_serving = off_json['product']['nutriments']['nova-group_serving']
-                except KeyError:
-                    group_serving = 0
-                item.portionable = group_serving > 1
-                item.group_serving = group_serving
-
-                item.portion_weight = None
-                item.portion_weight_format = None
-                item.consume_within_x_days_of_opening = None
-                item.save()
-
-            qs = Item.objects.filter(name=item.name).values()
-            return JsonResponse({"item_added": list(qs)})
-
-        else:
-            return JsonResponse({"item_not_added": off_json})
-
+    if request.method == 'POST':
+        item, item_created = Item.objects.get_or_create(barcode=new_item.barcode)
+        if not item_created:
+            item.save()
     return JsonResponse(response)
 
 
