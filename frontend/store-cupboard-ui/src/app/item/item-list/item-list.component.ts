@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormBuilder, FormArray } from '@angular/forms';
 import { Observable, timer } from "rxjs";
-import {map, switchMap} from "rxjs/operators";
+import { map, switchMap, take } from "rxjs/operators";
 
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
-import { faBarcode } from '@fortawesome/free-solid-svg-icons';
+import { faBarcode, faBan, faDrumstickBite } from '@fortawesome/free-solid-svg-icons';
 import { faSearchengin } from '@fortawesome/free-brands-svg-icons';
 
 import { ItemService } from "../services/item.service";
@@ -35,8 +35,10 @@ export class ItemListComponent implements OnInit {
   });
   showPortionableFields: boolean = false;
 
+  faBan = faBan;
   faBarcode = faBarcode;
   faSearchengin = faSearchengin;
+  faDrumstickBite = faDrumstickBite;
 
   constructor(private itemService: ItemService,
               private wikipediaApiService: WikipediaApiService,
@@ -86,19 +88,58 @@ export class ItemListComponent implements OnInit {
   }
 
   findManufacturerName() {
-    this.wikipediaApiService.openSearchQuery(this.addItemForm.get('manufacturer').value).pipe(map(data => {
-      console.log('openSearchQuery:', data);
+    this.wikipediaApiService.openSearchQuery(this.addItemForm.get('name').value).pipe(take(1), map(opensearch => {
+      // console.log('openSearchQuery:', opensearch['opensearch']);
+      this.wikipediaApiService.extractsPropQuery(opensearch['opensearch'][0]).pipe(take(1), map(extracts => {
+        // console.log('extracts:', extracts);
+        let regex: RegExp = /(?<=((manufactured|distributed) by ))([[a-zA-Z0-9\\s]+)/gm;
+        let extract: string = extracts['extract'];
+        let match: string = extract.match(regex)[0];
+        if (regex.test(extract)) {
+          // console.log('match:', match);
+          this.addItemForm.get('manufacturer').setValue(match);
+        }
+      })).subscribe();
     })).subscribe();
   }
 
   findBrandName() {
-    this.wikipediaApiService.openSearchQuery(this.addItemForm.get('brands').value).pipe(map(data => {
-      console.log('openSearchQuery:', data);
+    this.wikipediaApiService.openSearchQuery(this.addItemForm.get('name').value).pipe(take(1), map(opensearch => {
+      // console.log('openSearchQuery:', opensearch['opensearch']);
+      this.wikipediaApiService.extractsPropQuery(opensearch['opensearch'][0]).pipe(take(1), map(extracts => {
+        // console.log('extracts:', extracts);
+        let regex: RegExp = /(?<=<b>).+(?=<\/b> is a brand)/gm;
+        let extract: string = extracts['extract'];
+        let match: string = extract.match(regex)[0];
+        if (regex.test(extract)) {
+          // console.log('match:', match);
+          this.addItemForm.get('brands').setValue(match);
+        }
+      })).subscribe();
     })).subscribe();
   }
 
   togglePortionableFields() {
     this.showPortionableFields = !this.showPortionableFields;
+  }
+
+  addNewItem() {
+    let item: Item = {
+      id: null,
+      barcode: this.addItemForm.get('barcode').value,
+      brandId: this.addItemForm.get('brands').value,
+      name: this.addItemForm.get('name').value,
+      total_weight: this.addItemForm.get('total_weight').value,
+      total_weight_format: this.addItemForm.get('total_weight_format').value,
+      image: this.addItemForm.get('image').value,
+      portionable: this.showPortionableFields,
+      group_serving: this.addItemForm.get('group_serving').value,
+      portion_weight: this.addItemForm.get('portion_weight').value,
+      portion_weight_format: this.addItemForm.get('portion_weight_format').value,
+      consume_within_x_days_of_opening: this.addItemForm.get('consume_within_x_days_of_opening').value,
+    }
+    this.itemService.addItem(item).subscribe();
+    // this.closeScanningModal('New Item Added');
   }
 
 }

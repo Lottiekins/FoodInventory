@@ -1,44 +1,81 @@
-<div class="d-flex justify-content-center">
-  <div class="w-75">
-    <div class="d-flex justify-content-between">
-      <h1>Items</h1>
-      <div class="d-flex align-items-center">
-        <button type="button" class="btn btn-secondary" (click)="openScanningModal()">
-          <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Scan Barcode
-        </button>
-      </div>
-    </div>
-    <div class="card-columns">
-      <ng-template ngFor [ngForOf]="items$ | async" let-item let-i="index">
-        <div class="card">
-          <div class="d-flex flex-row">
-            <div class="d-flex justify-content-center w-50">
-              <div class="d-flex align-self-center">
-                <img class="card-img-top" alt="pantry egg logo"
-                     src="{{ item.image }}">
-              </div>
-            </div>
-            <div class="card-body w-50">
-              <h6 class="card-title">{{ item.name }}</h6>
-              <p class="card-text">
-                <span class="badge badge-info">Portionable</span> {{ item.group_serving }} Servings
-              </p>
-              <p class="card-text">
-                <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
-              </p>
-            </div>
-          </div>
-          <div class="card-footer">
-            <div class="d-flex justify-content-between">
-              <small class="text-muted">#{{ i }}</small>
-              <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-primary">Details</a>
-            </div>
-          </div>
+<div class="d-flex flex-column flex-grow-1">
+  <div class="d-flex justify-content-center flex-grow-1">
+    <div class="d-flex flex-column w-75">
+
+      <div class="d-flex justify-content-between">
+        <h1>Items</h1>
+        <div class="d-flex align-items-center">
+          <button type="button" class="btn btn-secondary" (click)="openScanningModal()">
+            <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Scan Barcode
+          </button>
         </div>
-      </ng-template>
+      </div>
+
+      <ng-container *ngIf="(items$ | async) as items">
+        <ng-container *ngIf="items?.length >= 1; else noItems">
+          <div class="card-columns">
+            <ng-template ngFor [ngForOf]="items" let-item let-i="index">
+              <div class="card">
+                <div class="d-flex flex-row">
+                  <div class="d-flex justify-content-center w-50">
+                    <div class="d-flex align-self-center">
+                      <img class="card-img-top" alt="pantry egg logo"
+                           src="{{ item.image }}">
+                    </div>
+                  </div>
+                  <div class="card-body w-50">
+                    <h6 class="card-title">{{ item.name }}</h6>
+                    <p class="card-text">
+                      <span class="badge badge-info">Portionable</span> {{ item.group_serving }} Servings
+                    </p>
+                    <p class="card-text">
+                      <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
+                    </p>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="d-flex justify-content-between">
+                    <small class="text-muted">#{{ i }}</small>
+                    <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-primary">Details</a>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
+      </ng-container>
+
     </div>
   </div>
 </div>
+
+
+<ng-template #noItems>
+  <div class="d-flex justify-content-center flex-grow-1">
+    <div class="d-flex align-items-center">
+
+      <div class="">
+        <div class="d-flex justify-content-center">
+          <div class="pr-3">
+            <fa-stack size="4x">
+              <fa-icon style="color: #6c757d;" [icon]="faDrumstickBite" stackItemSize="1x"></fa-icon>
+              <fa-icon style="color: darkred; opacity: 0.6;" [icon]="faBan" stackItemSize="2x"></fa-icon>
+            </fa-stack>
+          </div>
+          <div class="d-flex align-self-center">
+            <h3 class="text-muted">There are no items.</h3>
+          </div>
+        </div>
+        <div class="d-flex justify-content-center pt-3 pb-5">
+          <button type="button" class="btn btn-block btn-primary" (click)="openScanningModal()">
+            <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Scan Barcode
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ng-template>
 
 
 <ng-template #barcodeScanner>
@@ -74,7 +111,7 @@
         <div class="d-flex justify-content-between">
           <div class="flex-fill">
             <label for="manufacturer">Manufacturer:</label>
-            <input id="manufacturer" class="form-control" formControlName="brands">
+            <input id="manufacturer" class="form-control" formControlName="manufacturer">
           </div>
           <div class="d-flex align-self-end ml-2">
             <button type="button" class="btn btn-outline-warning" aria-label="Close"
@@ -158,6 +195,7 @@
     </form>
   </div>
   <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="addNewItem()">Add Item</button>
     <button type="button" class="btn btn-secondary" (click)="closeScanningModal('Close button click')">Close</button>
   </div>
 </ng-template>

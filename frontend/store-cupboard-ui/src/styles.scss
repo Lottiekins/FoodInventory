@@ -9,3 +9,8 @@
 html, body {
   height: 100%;
 }
+
+router-outlet + * {
+  display: flex;
+  flex-grow: 1;
+}

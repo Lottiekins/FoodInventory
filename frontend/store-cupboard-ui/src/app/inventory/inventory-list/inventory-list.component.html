@@ -1,27 +1,98 @@
-<div class="d-flex justify-content-center">
-  <div class="w-75">
-    <h1>Inventories</h1>
-    <div class="card-columns">
-      <ng-template ngFor [ngForOf]="inventories$ | async" let-inventory let-i="index">
-        <div class="card">
-          <div class="d-flex justify-content-center">
-            <img class="card-img-top w-50" alt="pantry egg logo"
-                 [src]="brandLogoSrc">
-          </div>
-          <div class="card-body">
-            <h5 class="card-title">{{ inventory.name }}</h5>
-            <!--
-            <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-            -->
-          </div>
-          <div class="card-footer">
-            <div class="d-flex justify-content-between">
-              <small class="text-muted">#{{ i }}</small>
-              <a [routerLink]="['/inventory/' + inventory.id]" class="btn btn-primary">Open</a>
-            </div>
-          </div>
+<div class="d-flex flex-column flex-grow-1">
+  <div class="d-flex justify-content-center flex-grow-1">
+    <div class="d-flex flex-column w-75">
+
+      <div class="d-flex justify-content-between">
+        <h1>Inventories</h1>
+        <div class="d-flex align-items-center">
+          <button type="button" class="btn btn-secondary" (click)="openAddInventoryDialogModal()">
+            <fa-icon [icon]="faShoppingCart" class="mr-2"></fa-icon> Add Inventory
+          </button>
         </div>
-      </ng-template>
+      </div>
+
+      <ng-container *ngIf="(inventories$ | async) as inventories">
+        <ng-container *ngIf="inventories?.length >= 1; else noInventories">
+          <div class="card-columns">
+            <ng-template ngFor [ngForOf]="inventories" let-inventory let-i="index">
+              <div class="card" [ngClass]="inventoryAdded.inventory_name === inventory.name
+                                        && inventoryAdded.inventory_created ? 'border-success' : ''">
+                <div class="d-flex justify-content-center">
+                  <img class="card-img-top w-50" alt="pantry egg logo"
+                       [src]="brandLogoSrc">
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">{{ inventory.name }}</h5>
+                  <!--
+                  <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  -->
+                </div>
+                <div class="card-footer">
+                  <div class="d-flex justify-content-between">
+                    <small class="text-muted">#{{ i }}</small>
+                    <a [routerLink]="['/inventory/' + inventory.id]" class="btn btn-primary">Open</a>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
+      </ng-container>
+
     </div>
   </div>
 </div>
+
+
+<ng-template #noInventories>
+  <div class="d-flex justify-content-center flex-grow-1">
+    <div class="d-flex align-items-center">
+
+      <div class="">
+        <div class="d-flex justify-content-center">
+          <div class="pr-3">
+            <fa-stack size="4x">
+              <fa-icon style="color: #6c757d;" [icon]="faShoppingCart" stackItemSize="1x"></fa-icon>
+              <fa-icon style="color: darkred; opacity: 0.6;" [icon]="faBan" stackItemSize="2x"></fa-icon>
+            </fa-stack>
+          </div>
+          <div class="d-flex align-self-center">
+            <h3 class="text-muted">There are no inventories.</h3>
+          </div>
+        </div>
+        <div class="d-flex justify-content-center pt-3 pb-5">
+          <button type="button" class="btn btn-block btn-primary" (click)="openAddInventoryDialogModal()">
+            <fa-icon [icon]="faShoppingCart" class="mr-2"></fa-icon> Add Inventory
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</ng-template>
+
+
+<ng-template #addInventoryDialog>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-addItemDialog">Add Inventory</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeAddInventoryDialogModal('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-alert *ngIf="addInventoryAlert.visible" [type]="addInventoryAlert.type"
+               [dismissible]="true" (close)="addInventoryAlertDismissed()">
+      {{ addInventoryAlert.message }}
+    </ngb-alert>
+    <form [formGroup]="addInventoryForm">
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input id="name" class="form-control" formControlName="name" placeholder="Kitchen, Fridge, etc...">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="addNewInventory()">Add Inventory</button>
+    <button type="button" class="btn btn-secondary" (click)="closeAddInventoryDialogModal('Close button click')">Close</button>
+  </div>
+</ng-template>
