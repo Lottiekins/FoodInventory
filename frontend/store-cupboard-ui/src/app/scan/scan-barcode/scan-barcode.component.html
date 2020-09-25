@@ -1,0 +1,64 @@
+<div *ngIf="availableDevices">
+  <div class="d-flex justify-content-between">
+    <div class="d-flex align-self-center w-100">
+      <div class="form-group w-100">
+        <label for="deviceSelect">Device:</label>
+        <select class="form-control" id="deviceSelect"
+                (change)="onDeviceSelectChange($event.target.value)">
+          <option value=""
+                  [selected]="!(selectedDevice$ | async)">No Device</option>
+          <option *ngFor="let device of availableDevices"
+                  [value]="device.deviceId"
+                  [selected]="(selectedDevice$ | async)
+                  && device.deviceId === (selectedDevice$ | async).deviceId">{{ device.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="d-flex align-self-center ml-2" *ngIf="isTorchCompatible">
+      <button type="button" class="btn" [ngClass]="!torchEnabled ? 'btn-warning' : 'btn-secondary'" (click)="toggleTorch()">
+        <fa-icon [icon]="torchEnabled ? fasLightbulb : farLightbulb" class="mr-2"></fa-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!hasCameras && hasPermission === true">
+  <h1>Looks like your actual device does not has cameras, or I could not find them. </h1>
+</div>
+
+<div *ngIf="hasPermission === undefined">
+  <h1>Waiting for permissions.</h1>
+  <blockquote>
+    <h2>If your device does not has cameras, no permissions will be asked.</h2>
+  </blockquote>
+</div>
+
+<div *ngIf="hasPermission === false">
+  <h1>You denied the camera permissions, we can't scan anything without it. 😪</h1>
+</div>
+
+<div style="width: 100%;" [hidden]="!hasCameras">
+  <zxing-scanner #scanner
+                 class="zxing-scanner"
+                 [enable]="scannerEnabled"
+                 [device]="(selectedDevice$ | async)"
+                 [formats]="allowedFormats"
+                 [autofocusEnabled]="true"
+                 [torch]="torchEnabled"
+                 [previewFitMode]="'cover'"
+                 (torchCompatible)="onTorchCompatible($event)"
+                 (camerasFound)="camerasFoundHandler($event)"
+                 (camerasNotFound)="camerasNotFoundHandler($event)"
+                 (scanSuccess)="scanSuccessHandler($event)"
+                 (scanError)="scanErrorHandler($event)"></zxing-scanner>
+  <h2 *ngIf="!(selectedDevice$ | async)">No camera selected.</h2>
+  <p>
+    <strong>{{ barcodeResultString }}</strong>
+    <span class="badge ml-2" [ngClass]="badgeClass">{{ badgeString }}</span>
+  </p>
+</div>
+
+<audio #audioCheckoutBleep preload="auto">
+  <source [src]="audioCheckoutBleepSrc" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>

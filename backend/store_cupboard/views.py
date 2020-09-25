@@ -1,0 +1,204 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from requests.utils import requote_uri
+
+import requests
+import json
+
+from .models import Brand, Item, Inventory, Manufacturer
+
+
+# ============================================================================================
+#
+#   Inventories
+#
+# ============================================================================================
+def get_all_inventories(request):
+    response = json.dumps({})
+    if request.method == 'GET':
+        try:
+            response = list(Inventory.objects.values())
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No item with that name'}])
+    return HttpResponse(json.dumps(response,
+                                   sort_keys=True,
+                                   indent=1,
+                                   cls=DjangoJSONEncoder), content_type="application/json")
+
+
+@csrf_exempt
+def add_inventory(request):
+    if request.method == 'POST':
+        inventory_name = str.strip(request.body.decode("utf-8"))
+        if not len(inventory_name) == 0:
+            inventory, inventory_created = Inventory.objects.get_or_create(name=inventory_name)
+            print('inventory_name:', inventory_name, '; inventory_created:', inventory_created)
+            # An Inventory called 'abc' was created.
+            # An Inventory called 'abc' already exists, try another name.
+            response = json.dumps({'inventory_name': inventory_name,
+                                   'inventory_created': inventory_created},
+                                  sort_keys=True,
+                                  indent=1,
+                                  cls=DjangoJSONEncoder)
+            return HttpResponse(response, content_type="application/json")
+    # Any other error.
+    response = json.dumps({'inventory_name': None,
+                           'inventory_created': False},
+                          sort_keys=True,
+                          indent=1,
+                          cls=DjangoJSONEncoder)
+    return HttpResponse(response, content_type="application/json")
+
+
+@csrf_exempt
+def delete_inventory(request, inventory_id: int):
+    if request.method == 'DELETE':
+        inventory, inventory_deleted = Inventory.objects.filter(id=inventory_id).delete()
+        response = bool(inventory)
+        print('inventory:', bool(inventory), '; inventory_deleted:', inventory_deleted)
+        return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+# ============================================================================================
+#
+#   Items
+#
+# ============================================================================================
+def get_all_items(request):
+    response = json.dumps({})
+    if request.method == 'GET':
+        try:
+            response = list(Item.objects.values())
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No item with that name'}])
+    return HttpResponse(json.dumps(response,
+                                   sort_keys=True,
+                                   indent=1,
+                                   cls=DjangoJSONEncoder), content_type="application/json")
+
+
+def get_item(request, item_id: str):
+    response = json.dumps([{}])
+    if request.method == 'GET':
+        try:
+            response = list(Item.objects.filter(id=item_id).values())
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No item with that name'}])
+    return HttpResponse(json.dumps(response,
+                                   sort_keys=True,
+                                   indent=1,
+                                   cls=DjangoJSONEncoder), content_type="application/json")
+
+
+@csrf_exempt
+def add_item(request):
+    if request.method == 'POST':
+        item = json.loads(request.body)
+        if not item['name'] == 0:
+
+            # Make a new Manufacturer if required
+            manufacturer, manufacturer_created = \
+                Manufacturer.objects.get_or_create(name=item['brand']['manufacturer']['name'])
+            print('manufacturer:', manufacturer, '; manufacturer_created:', manufacturer_created)
+
+            # Make a new Brand if required
+            brand, brand_created = Brand.objects.get_or_create(manufacturer=manufacturer,
+                                                               name=item['brand']['name'])
+            print('brand:', brand, '; brand_created:', brand_created)
+
+            if manufacturer and brand:
+                # Make a new Item
+                item, item_created = Item.objects.get_or_create(
+                                        barcode=item['barcode'],
+                                        brand=brand,
+                                        name=item['name'],
+                                        total_weight=item['total_weight'],
+                                        total_weight_format=item['total_weight_format'],
+                                        image=item['image'],
+                                        portionable=item['portionable'],
+                                        group_serving=item['group_serving'],
+                                        portion_weight=item['portion_weight'],
+                                        portion_weight_format=item['portion_weight_format'],
+                                        consume_within_x_days_of_opening=item['consume_within_x_days_of_opening'])
+
+                print('item:', item, '; item_created:', item_created)
+                response = json.dumps({'item': item.to_json(),
+                                       'item_created': item_created})
+                return HttpResponse(response, content_type="application/json")
+    response = json.dumps([{}])
+    return HttpResponse(response, content_type="application/json")
+
+
+@csrf_exempt
+def delete_item(request, item_id: int):
+    if request.method == 'DELETE':
+        item, item_deleted = Item.objects.filter(id=item_id).delete()
+        response = bool(item)
+        print('inventory:', bool(item), '; inventory_deleted:', item_deleted)
+        return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+# ============================================================================================
+#
+#   Open Food Facts API
+#
+# ============================================================================================
+def get_openfoodfacts_from_barcode_data(request, barcode_data: str):
+    url = 'https://world.openfoodfacts.org/api/v0/product/' + barcode_data + '.json'
+    response = json.dumps({})
+    if request.method == 'GET':
+        # open food facts API - https://wiki.openfoodfacts.org/API
+        off_request = requests.get(url)
+        off_json = off_request.json()
+        if off_request.status_code == 200 and off_json['status_verbose'] == 'product found':
+            return JsonResponse(off_json)
+        else:
+            return JsonResponse(off_json)
+    return JsonResponse(response)
+
+
+# ============================================================================================
+#
+#   Wikipedia API
+#
+# ============================================================================================
+def get_wikipedia_opensearch(request, search_term: str):
+    url = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' + \
+          requote_uri(search_term) + '&format=json'
+    response = json.dumps({})
+    if request.method == 'GET':
+        off_request = requests.get(url)
+        off_json = off_request.json()
+        if off_json[0] and off_json[1] and off_json[0] != off_json[1][0]:
+            url = 'https://en.wikipedia.org/w/api.php?action=opensearch&search=' \
+                  + requote_uri(off_json[1][0]) + '&format=json'
+            off_request = requests.get(url)
+            off_json = off_request.json()
+        return JsonResponse({'opensearch': off_json})
+    return JsonResponse(response)
+
+
+def get_wikipedia_extracts(request, search_term: str):
+    url = 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts&titles=' \
+          + requote_uri(search_term) + '&format=json'
+    response = json.dumps({})
+    if request.method == 'GET':
+        off_request = requests.get(url)
+        off_json = off_request.json()
+        pages = off_json['query']['pages']
+        page_ids = list(pages.keys())[0]
+        if off_json['query']['pages'][page_ids]:
+            try:
+                extract = off_json['query']['pages'][page_ids]['extract']
+                return JsonResponse({'extract': extract})
+            except KeyError:
+                try:
+                    title = off_json['query']['pages'][page_ids]['title']
+                    return JsonResponse({'title': title})
+                except KeyError:
+                    return JsonResponse({'extract': None})
+    return JsonResponse(response)
