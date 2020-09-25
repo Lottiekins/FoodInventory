@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 
-import { Item } from "../models/item.model";
+import { Item, ItemAdded } from "../models/item.model";
 
 
 @Injectable({
@@ -18,9 +18,16 @@ export class ItemService {
     return this.http.get<Item[]>(url);
   }
 
-  addItem(item: Item): Observable<Item> {
+  addItem(item: Item, csrftoken: string): Observable<ItemAdded> {
     const url = `https://192.168.1.13:8000/api/v1/item/add/`;
-    return this.http.post<Item>(url, item, { withCredentials: true });
+    const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : '' });
+    return this.http.post<ItemAdded>(url, item, {headers});
+  }
+
+  deleteItem(id: number, csrftoken: string): Observable<boolean> {
+    const url = `https://192.168.1.13:8000/api/v1/item/del/${id}`;
+    const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : '' });
+    return this.http.delete<boolean>(url, {headers});
   }
 
 }

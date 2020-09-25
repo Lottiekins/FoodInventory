@@ -24,19 +24,34 @@
                     </div>
                   </div>
                   <div class="card-body w-50">
-                    <h6 class="card-title">{{ item.name }}</h6>
-                    <p class="card-text">
-                      <span class="badge badge-info">Portionable</span> {{ item.group_serving }} Servings
-                    </p>
-                    <p class="card-text">
-                      <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
-                    </p>
+                    <div class="d-flex flex-row h-100">
+                      <div class="d-flex flex-grow-1 flex-column">
+                        <h6 class="card-title">{{ item.name }}</h6>
+                        <div class="d-flex flex-grow-1 flex-column card-text">
+                          <ng-container *ngIf="item.portionable;">
+                            <div><span class="badge badge-secondary">Portionable</span></div>
+                            <div>{{ item.group_serving }} Servings</div>
+                          </ng-container>
+                          <div class="ml-auto mt-auto">
+                            <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="card-footer">
                   <div class="d-flex justify-content-between">
-                    <small class="text-muted">#{{ i }}</small>
-                    <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-primary">Details</a>
+                    <div class="d-flex align-self-center">
+                      <div class="d-flex flex-column">
+                        <small class="text-muted">#{{ i }}</small>
+                        <small class="text-muted" title="Created Date"><fa-icon [icon]="faCalendarDay"></fa-icon> {{ item.created_on | date }}</small>
+                      </div>
+                    </div>
+                    <div class="d-flex align-self-center">
+                      <button class="btn btn-sm btn-outline-danger mr-2" (click)="openDeleteConfirmDialog(item)">Delete</button>
+                      <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-outline-info">Details</a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -78,10 +93,30 @@
 </ng-template>
 
 
+<ng-template #deleteConfirmDialog>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-deleteConfirmDialog">Delete Item</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-alert type="danger" dismissible>
+      This action will permanently remove the '{{ itemMarkedForDeletion.name }}' item!
+    </ngb-alert>
+    Are you sure?
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="deleteItem(itemMarkedForDeletion.id)">Yes</button>
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('No button click')">No</button>
+  </div>
+</ng-template>
+
+
 <ng-template #barcodeScanner>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-barcodeScanner">Scan Barcode</h4>
-    <button type="button" class="close" aria-label="Close" (click)="closeScanningModal('Cross click')">
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -89,7 +124,7 @@
     <app-scan-barcode (newProductQueryEvent)="onEmitNewProductQueryEvent($event)"></app-scan-barcode>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeScanningModal('Close button click')">Close</button>
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
   </div>
 </ng-template>
 
@@ -97,15 +132,20 @@
 <ng-template #addItemDialog>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-addItemDialog">Add Item</h4>
-    <button type="button" class="close" aria-label="Close" (click)="closeScanningModal('Cross click')">
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
     <form [formGroup]="addItemForm">
       <div class="form-group">
-        <label for="barcode">Barcode:</label>
-        <input id="barcode" class="form-control" formControlName="barcode">
+        <label class="control-label" for="barcode">Barcode:</label>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text"><fa-icon [icon]="faBarcode" class="mr-2"></fa-icon></span>
+          </div>
+          <input id="barcode" class="form-control" formControlName="barcode" readonly>
+        </div>
       </div>
       <div class="form-group">
         <div class="d-flex justify-content-between">
@@ -116,7 +156,7 @@
           <div class="d-flex align-self-end ml-2">
             <button type="button" class="btn btn-outline-warning" aria-label="Close"
                     (click)="findManufacturerName()">
-              <fa-icon [icon]="faSearchengin"></fa-icon>
+              <fa-icon [icon]="faSearchEngine"></fa-icon> Wikipedia
             </button>
           </div>
         </div>
@@ -130,7 +170,7 @@
           <div class="d-flex align-self-end ml-2">
             <button type="button" class="btn btn-outline-warning" aria-label="Close"
                     (click)="findBrandName()">
-              <fa-icon [icon]="faSearchengin"></fa-icon>
+              <fa-icon [icon]="faSearchEngine"></fa-icon> Wikipedia
             </button>
           </div>
         </div>
@@ -146,7 +186,9 @@
             <input id="image" class="form-control" formControlName="image">
           </div>
           <div class="d-flex flex-fill w-25 ml-2">
-            <img class="img-fluid img-thumbnail" [src]="addItemForm.get('image').value" alt="Product Image">
+            <img class="img-fluid img-thumbnail" alt="Product Image"
+                 [src]="addItemForm.get('image').value ? addItemForm.get('image').value
+                                                       : 'https://via.placeholder.com/300?text=No+Product+Image'">
           </div>
         </div>
       </div>
@@ -157,7 +199,14 @@
             <input id="total_weight" type="text" class="form-control" aria-label="Total Weight"
                    formControlName="total_weight">
             <div class="input-group-append">
-              <span class="input-group-text">{{ addItemForm.get("total_weight_format").value }}</span>
+              <select class="custom-select" id="total_weight_select" formControlName="total_weight_format">
+                <option [value]="null">Choose...</option>
+                <option *ngFor="let weightFormatChoice of weightFormatChoicesEnum"
+                        [ngValue]="getWeightFormatEnum(weightFormatChoice[0])">{{ weightFormatChoice[1] }}</option>
+              </select>
+              <label class="input-group-text" for="total_weight_select">
+                {{ addItemForm.get('total_weight_format').value }}
+              </label>
             </div>
           </div>
         </div>
@@ -176,13 +225,20 @@
           <input id="group_serving" class="form-control" formControlName="group_serving">
         </div>
         <div class="form-group">
-          <label for="portion_weight" class="control-label">Portion Weight:</label>
+          <label for="total_weight" class="control-label">Portion Weight:</label>
           <div class="form-group">
             <div class="input-group mb-3">
               <input id="portion_weight" type="text" class="form-control" aria-label="Portion Weight"
                      formControlName="portion_weight">
               <div class="input-group-append">
-                <span class="input-group-text">{{ addItemForm.get("portion_weight_format").value }}</span>
+                <select class="custom-select" id="portion_weight_select" formControlName="portion_weight_format">
+                  <option [value]="null">Choose...</option>
+                  <option *ngFor="let weightFormatChoice of weightFormatChoicesEnum"
+                          [ngValue]="getWeightFormatEnum(weightFormatChoice[0])">{{ weightFormatChoice[1] }}</option>
+                </select>
+                <label class="input-group-text" for="total_weight_select">
+                  {{ addItemForm.get('portion_weight_format').value }}
+                </label>
               </div>
             </div>
           </div>
@@ -196,6 +252,6 @@
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-primary" (click)="addNewItem()">Add Item</button>
-    <button type="button" class="btn btn-secondary" (click)="closeScanningModal('Close button click')">Close</button>
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
   </div>
 </ng-template>

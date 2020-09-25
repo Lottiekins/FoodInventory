@@ -1,17 +1,18 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormBuilder, FormArray } from '@angular/forms';
-import { Observable, timer } from "rxjs";
-import { map, switchMap, take } from "rxjs/operators";
+import { Observable } from "rxjs";
+import { map, take } from "rxjs/operators";
 
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
-import { faBarcode, faBan, faDrumstickBite } from '@fortawesome/free-solid-svg-icons';
+import { faBarcode, faBan, faDrumstickBite, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 import { faSearchengin } from '@fortawesome/free-brands-svg-icons';
 
 import { ItemService } from "../services/item.service";
 import { WikipediaApiService } from "../../scan/services/wikipedia-api.service";
 
 import { ProductQuery } from "../../scan/models/openfoodfacts.modal";
-import { Item, WeightFormatEnum } from "../models/item.model";
+import { Item, ItemAdded, WeightFormatChoicesEnum, WeightFormatEnum } from "../models/item.model";
+import { Alert } from "../../shared/models/alert.model";
 
 
 @Component({
@@ -21,24 +22,46 @@ import { Item, WeightFormatEnum } from "../models/item.model";
 })
 export class ItemListComponent implements OnInit {
 
-  @ViewChild('barcodeScanner') barcodeScanner: NgbModalRef;
-  @ViewChild('addItemDialog') addItemDialog: NgbModalRef;
+  @ViewChild('barcodeScanner')
+  public barcodeScanner: NgbModalRef;
 
-  items$: Observable<Item[]>;
+  @ViewChild('addItemDialog')
+  public addItemDialog: NgbModalRef;
 
-  addItemForm = new FormGroup ({
+  public items$: Observable<Item[]>;
+
+  public addItemAlert: Alert = {
+    type: 'info',
+    message: '-',
+    visible: false
+  };
+
+  public itemAdded: ItemAdded = {
+    item: null,
+    item_created: false,
+  };
+
+  public weightFormatChoicesEnum: any = Object.entries(WeightFormatChoicesEnum);
+
+  public addItemForm = new FormGroup ({
     barcode: new FormControl(),
     brands: new FormArray([ new FormControl("")]),
     product_name: new FormControl(),
     selected_images: new FormControl(),
     _keywords: new FormControl()
   });
-  showPortionableFields: boolean = false;
+  public showPortionableFields: boolean = false;
 
-  faBan = faBan;
-  faBarcode = faBarcode;
-  faSearchengin = faSearchengin;
-  faDrumstickBite = faDrumstickBite;
+  @ViewChild('deleteConfirmDialog')
+  public deleteConfirmDialog: NgbModalRef;
+
+  public itemMarkedForDeletion: Item;
+
+  public faBan = faBan;
+  public faBarcode = faBarcode;
+  public faCalendarDay = faCalendarDay;
+  public faSearchEngine = faSearchengin;
+  public faDrumstickBite = faDrumstickBite;
 
   constructor(private itemService: ItemService,
               private wikipediaApiService: WikipediaApiService,
@@ -47,21 +70,40 @@ export class ItemListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.items$ = timer(0, 60 * 1000).pipe(switchMap(() => {
-      return this.itemService.getItems();
-    }));
+    this.items$ = this.itemService.getItems();
   }
 
   openScanningModal() {
     this.ngbModalService.open(this.barcodeScanner);
   }
 
-  closeScanningModal(reason: string) {
+  closeAllDialogModals(reason: string) {
     this.ngbModalService.dismissAll(reason);
   }
 
+  openDeleteConfirmDialog(item: Item): void {
+    this.itemMarkedForDeletion = item;
+    this.ngbModalService.open(this.deleteConfirmDialog);
+  }
+
+  deleteItem(itemId: number) {
+    const csrftoken = localStorage.getItem('csrf_token');
+    this.itemService.deleteItem(itemId, csrftoken).pipe(map(data => {
+      console.log('deleteInventory:', data);
+      this.closeAllDialogModals('New Inventory Created');
+      this.items$ = this.itemService.getItems();
+    })).subscribe();
+  }
+
+  getWeightFormatEnum(key: string): string {
+    let weightFormatEnum: [string, string] = Object.entries(WeightFormatEnum).find(x => x[0] === key);
+    if (weightFormatEnum != undefined) {
+      return weightFormatEnum[1];
+    }
+  }
+
   onEmitNewProductQueryEvent(productQuery: ProductQuery) {
-    this.closeScanningModal('NewProductQuery Received');
+    this.closeAllDialogModals('NewProductQuery Received');
     this.openAddItemDialogModal(productQuery);
   }
 
@@ -71,9 +113,10 @@ export class ItemListComponent implements OnInit {
       manufacturer: '',
       brands: productQuery.product.brands,
       name: productQuery.product.product_name,
-      image: productQuery.product.selected_images.front.display[productQuery.product.lc],
+      image: productQuery.product.selected_images?.front ? productQuery.product.selected_images.front.display[productQuery.product.lc] :
+             'https://via.placeholder.com/150?text=No+Product+Image',
       total_weight: 0,
-      total_weight_format: WeightFormatEnum.GRAM,
+      total_weight_format: null,
       portionable: false,
       group_serving: 0,
       portion_weight: 0,
@@ -84,37 +127,50 @@ export class ItemListComponent implements OnInit {
 
   openAddItemDialogModal(productQuery: ProductQuery) {
     this.createAddItemForm(productQuery);
-    this.ngbModalService.open(this.addItemDialog);
+    this.ngbModalService.open(this.addItemDialog, {backdrop: 'static'});
   }
 
   findManufacturerName() {
-    this.wikipediaApiService.openSearchQuery(this.addItemForm.get('name').value).pipe(take(1), map(opensearch => {
-      // console.log('openSearchQuery:', opensearch['opensearch']);
+    let searchTerm: string = encodeURI(this.addItemForm.get('name').value);
+    this.wikipediaApiService.openSearchQuery(searchTerm).pipe(take(1), map(opensearch => {
       this.wikipediaApiService.extractsPropQuery(opensearch['opensearch'][0]).pipe(take(1), map(extracts => {
-        // console.log('extracts:', extracts);
-        let regex: RegExp = /(?<=((manufactured|distributed) by ))([[a-zA-Z0-9\\s]+)/gm;
-        let extract: string = extracts['extract'];
-        let match: string = extract.match(regex)[0];
-        if (regex.test(extract)) {
-          // console.log('match:', match);
-          this.addItemForm.get('manufacturer').setValue(match);
+
+        if (extracts['extract'] != undefined) {
+          let extract: string = extracts['extract'];
+          let regex: RegExp = /(?<=((manufactured|distributed) by ))([[a-zA-Z0-9\\s]+)/gm;
+          let match: string = extract.match(regex)[0];
+          if (regex.test(extract)) {
+            this.addItemForm.get('manufacturer').setValue(match);
+          }
+        } else if (extracts['title'] != undefined) {
+          let title: string = extracts['title'];
+          this.addItemForm.get('manufacturer').setValue(title);
+        } else {
+          this.addItemForm.get('manufacturer').setValue('Unknown');
         }
+
       })).subscribe();
     })).subscribe();
   }
 
   findBrandName() {
     this.wikipediaApiService.openSearchQuery(this.addItemForm.get('name').value).pipe(take(1), map(opensearch => {
-      // console.log('openSearchQuery:', opensearch['opensearch']);
       this.wikipediaApiService.extractsPropQuery(opensearch['opensearch'][0]).pipe(take(1), map(extracts => {
-        // console.log('extracts:', extracts);
-        let regex: RegExp = /(?<=<b>).+(?=<\/b> is a brand)/gm;
-        let extract: string = extracts['extract'];
-        let match: string = extract.match(regex)[0];
-        if (regex.test(extract)) {
-          // console.log('match:', match);
-          this.addItemForm.get('brands').setValue(match);
+
+        if (extracts['extract'] != undefined) {
+          let extract: string = extracts['extract'];
+          let regex: RegExp = /(?<=<b>).+(?=<\/b> is a brand)/gm;
+          let match: string = extract.match(regex)[0];
+          if (regex.test(extract)) {
+            this.addItemForm.get('brands').setValue(match);
+          }
+        } else if (extracts['title'] != undefined) {
+          let title: string = extracts['title'];
+          this.addItemForm.get('brands').setValue(title);
+        } else {
+          this.addItemForm.get('brands').setValue('Unknown');
         }
+
       })).subscribe();
     })).subscribe();
   }
@@ -124,10 +180,15 @@ export class ItemListComponent implements OnInit {
   }
 
   addNewItem() {
+    const csrftoken = localStorage.getItem('csrf_token');
     let item: Item = {
-      id: null,
       barcode: this.addItemForm.get('barcode').value,
-      brandId: this.addItemForm.get('brands').value,
+      brand: {
+        manufacturer: {
+          name: this.addItemForm.get('manufacturer').value
+        },
+        name: this.addItemForm.get('brands').value
+      },
       name: this.addItemForm.get('name').value,
       total_weight: this.addItemForm.get('total_weight').value,
       total_weight_format: this.addItemForm.get('total_weight_format').value,
@@ -138,8 +199,26 @@ export class ItemListComponent implements OnInit {
       portion_weight_format: this.addItemForm.get('portion_weight_format').value,
       consume_within_x_days_of_opening: this.addItemForm.get('consume_within_x_days_of_opening').value,
     }
-    this.itemService.addItem(item).subscribe();
-    // this.closeScanningModal('New Item Added');
+    this.itemService.addItem(item, csrftoken).pipe(map((data: ItemAdded) => {
+      console.log(data);
+      if (data.item.name?.length == 0 && !data.item_created) {
+        // Failed: Blank item name
+        this.addItemAlert.type = 'info';
+        this.addItemAlert.message = `Inventory names cannot be blank/empty.`;
+        this.addItemAlert.visible = true;
+      } else if (data.item.name?.length >= 1 && !data.item_created) {
+        // Failed: Existing inventory name
+        this.addItemAlert.type = 'warning';
+        this.addItemAlert.message = `An Inventory called '${data.item.name}' already exists, try another name.`;
+        this.addItemAlert.visible = true;
+      } else if (data.item_created) {
+        // Success: Created inventory
+        this.itemAdded = data;
+        this.addItemAlert.message = `An Inventory called '${data.item.name}' has been created.`;
+        this.closeAllDialogModals('New Item Added');
+        this.items$ = this.itemService.getItems();
+      }
+    })).subscribe();
   }
 
 }

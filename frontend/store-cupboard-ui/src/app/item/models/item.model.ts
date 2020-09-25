@@ -1,7 +1,9 @@
+import { Brand } from "./brand.model";
+
 export interface Item {
-  id: number;
+  id?: number;
   barcode: number;
-  brandId: number;
+  brand: Brand; // brandId FK
   name: string;
   total_weight: number | null;
   total_weight_format: string | null;
@@ -11,6 +13,13 @@ export interface Item {
   portion_weight: number | null;
   portion_weight_format: string | null;
   consume_within_x_days_of_opening: number | null;
+  created_on?: Date;
+  modified_on?: Date;
+}
+
+export interface ItemAdded {
+  item: Item;
+  item_created: boolean;
 }
 
 export enum WeightFormatEnum {

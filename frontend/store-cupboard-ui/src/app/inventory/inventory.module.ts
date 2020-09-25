@@ -5,10 +5,11 @@ import { ReactiveFormsModule } from "@angular/forms";
 
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 
+import { NgbAlertModule } from "@ng-bootstrap/ng-bootstrap";
+
 import { InventoryRoutingModule } from "./inventory-routing.module";
 
 import { InventoryListComponent } from './inventory-list/inventory-list.component';
-import { NgbAlertModule } from "@ng-bootstrap/ng-bootstrap";
 
 
 @NgModule({

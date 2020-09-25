@@ -1,6 +1,9 @@
 export interface Inventory {
-  id: number;
+  id?: number;
   name: string;
+  image: string;
+  created_on?: Date;
+  modified_on?: Date;
 }
 
 export interface InventoryAdded {
