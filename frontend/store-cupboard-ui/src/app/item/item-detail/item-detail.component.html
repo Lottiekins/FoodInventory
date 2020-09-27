@@ -1,0 +1,50 @@
+<div class="d-flex flex-column flex-grow-1">
+  <div class="d-flex justify-content-center flex-grow-1">
+    <div class="d-flex flex-column w-75">
+
+      <ng-container *ngIf="(item$ | async) as item">
+
+        <div class="d-flex justify-content-between my-2">
+          <div class="d-flex justify-content-start">
+            <h1 class="text-truncate">{{ item.name }}</h1>
+            <div class="d-flex align-items-center ml-2">
+              <div class="badge badge-secondary">Item</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center">
+            <!-- edit? -->
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <div class="d-flex flex-column flex-grow-1 text-muted">
+            <div class="d-flex justify-content-start">
+              <span class="mr-2"><fa-icon class="text-primary" [icon]="faBarcode"></fa-icon> Barcode:</span>
+              <span class="text-light">{{ item.barcode }}</span>
+            </div>
+            <div class="d-flex justify-content-start">
+              <span class="mr-2"><fa-icon class="text-primary" [icon]="faCalendarDay"></fa-icon> Created On:</span>
+              <span class="text-light">{{ item.created_on | date: 'dd-MMM-yyyy' }}</span>
+            </div>
+            <div class="d-flex justify-content-start">
+              <span class="mr-2"><fa-icon class="text-primary" [icon]="faCalendarDay"></fa-icon> Last Modified:</span>
+              <span class="text-light">{{ item.modified_on | date: 'dd-MMM-yyyy' }}</span>
+            </div>
+          </div>
+          <div class="">
+            <ngx-barcode [bc-value]="item.barcode.toString()" [bc-display-value]="true"
+                         [bc-height]="40" [bc-width]="1.37" [bc-font-size]="16" [bc-class]="'img-thumbnail'" ></ngx-barcode>
+          </div>
+          <div class="ml-2">
+            <div class="d-flex justify-content-end">
+              <img class="img-fluid img-thumbnail" style="max-height: 5.85em;"
+                   [src]="item.image" alt="item image">
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>

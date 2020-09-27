@@ -5,6 +5,7 @@ import { CommonModule } from "@angular/common";
 import { HttpClientModule } from "@angular/common/http";
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgxBarcodeModule } from "ngx-barcode";
 
 import { AppRoutingModule } from './app-routing.module';
 

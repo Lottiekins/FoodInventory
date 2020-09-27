@@ -121,7 +121,8 @@
     </button>
   </div>
   <div class="modal-body">
-    <app-scan-barcode (newProductQueryEvent)="onEmitNewProductQueryEvent($event)"></app-scan-barcode>
+    <app-scan-barcode (newProductQueryEvent)="onEmitNewProductQueryEvent($event)"
+                      (existingItemEvent)="onExistingItemEvent($event)"></app-scan-barcode>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>

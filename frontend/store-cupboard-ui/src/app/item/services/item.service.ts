@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 
 import { Observable, Subject, timer } from "rxjs";
-import { retry, share, switchMap, takeUntil } from "rxjs/operators";
+import {map, retry, share, switchMap, takeUntil} from "rxjs/operators";
 
 import { Item, ItemAdded } from "../models/item.model";
 
@@ -19,6 +19,17 @@ export class ItemService implements OnDestroy {
 
   ngOnDestroy() {
    this.stopPolling.next();
+  }
+
+  getItem(itemId: number): Observable<Item> {
+    const url = `https://192.168.1.13:8000/api/v1/item/${itemId}`;
+    return timer(1, 5*1000).pipe(
+      switchMap(() => this.http.get<Item>(url)),
+      retry(),
+      map(item => item[0]),
+      share(),
+      takeUntil(this.stopPolling)
+    );
   }
 
   getAllItems(): Observable<Item[]> {

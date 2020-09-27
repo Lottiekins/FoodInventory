@@ -14,6 +14,7 @@ import { WikipediaApiService } from "../../shared/services/wikipedia-api.service
 import { ProductQuery } from "../../shared/models/openfoodfacts.modal";
 import { Item, ItemAdded, WeightFormatChoicesEnum, WeightFormatEnum } from "../models/item.model";
 import { Alert } from "../../shared/models/alert.model";
+import {Router} from "@angular/router";
 
 
 @Component({
@@ -70,10 +71,11 @@ export class ItemListComponent implements OnInit {
   public faSearchEngine = faSearchengin;
   public faDrumstickBite = faDrumstickBite;
 
-  constructor(private itemService: ItemService,
-              private wikipediaApiService: WikipediaApiService,
+  constructor(private wikipediaApiService: WikipediaApiService,
               private ngbModalService: NgbModal,
-              private formBuilder: FormBuilder) {
+              private itemService: ItemService,
+              private formBuilder: FormBuilder,
+              private router: Router) {
   }
 
   ngOnInit(): void {
@@ -113,9 +115,15 @@ export class ItemListComponent implements OnInit {
   }
 
   onEmitNewProductQueryEvent(productQuery: ProductQuery) {
-    console.log('productQuery', productQuery)
+    console.log('onEmitNewProductQueryEvent', productQuery);
     this.closeAllDialogModals('NewProductQuery Received');
     this.openAddItemDialogModal(productQuery);
+  }
+
+  onExistingItemEvent(item: Item) {
+    console.log('onExistingItemEvent', item);
+    this.closeAllDialogModals('NewProductQuery Received');
+    this.router.navigate([`/item/${item.id}`]).then();
   }
 
   onEmitNewDataURLEvent(dataURL: string) {

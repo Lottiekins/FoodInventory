@@ -6,6 +6,7 @@ import { RouterModule } from "@angular/router";
 import { NgbAlertModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 import { ZXingScannerModule } from "@zxing/ngx-scanner";
+import { NgxBarcodeModule } from "ngx-barcode";
 
 import { SharedModule } from "../shared/shared.module";
 
@@ -13,10 +14,11 @@ import { ItemRoutingModule } from "./item-routing.module";
 
 import { ItemListComponent } from './item-list/item-list.component';
 import { ScanBarcodeComponent } from "../shared/scan-barcode/scan-barcode.component";
+import { ItemDetailComponent } from './item-detail/item-detail.component';
 
 
 @NgModule({
-  declarations: [ItemListComponent, ScanBarcodeComponent],
+  declarations: [ItemListComponent, ScanBarcodeComponent, ItemDetailComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -27,7 +29,8 @@ import { ScanBarcodeComponent } from "../shared/scan-barcode/scan-barcode.compon
     FormsModule,
     NgbTooltipModule,
     ZXingScannerModule,
-    SharedModule
+    SharedModule,
+    NgxBarcodeModule
   ]
 })
 export class ItemModule { }
