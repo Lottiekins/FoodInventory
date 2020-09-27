@@ -9,6 +9,7 @@ urlpatterns = [
     path('inventory/delete/<int:inventory_id>', views.delete_inventory),
 
     path('items', views.get_all_items),
+    path('item/<int:item_id>', views.get_item),
     path('item/add/', views.add_item),
     path('item/del/<int:item_id>', views.delete_item),
 

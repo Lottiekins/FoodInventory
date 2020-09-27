@@ -87,11 +87,11 @@ def delete_inventory(request, inventory_id: int):
 #   Items
 #
 # ============================================================================================
-def get_all_items(request):
-    response = json.dumps({})
+def get_item(request, item_id: str):
+    response = json.dumps([{}])
     if request.method == 'GET':
         try:
-            response = list(Item.objects.values())
+            response = list(Item.objects.filter(id=item_id).values())
         except ObjectDoesNotExist:
             response = json.dumps([{'Error': 'No item with that name'}])
     return HttpResponse(json.dumps(response,
@@ -100,11 +100,11 @@ def get_all_items(request):
                                    cls=DjangoJSONEncoder), content_type="application/json")
 
 
-def get_item(request, item_id: str):
-    response = json.dumps([{}])
+def get_all_items(request):
+    response = json.dumps({})
     if request.method == 'GET':
         try:
-            response = list(Item.objects.filter(id=item_id).values())
+            response = list(Item.objects.values())
         except ObjectDoesNotExist:
             response = json.dumps([{'Error': 'No item with that name'}])
     return HttpResponse(json.dumps(response,
