@@ -1,12 +1,13 @@
 import { Component, isDevMode, OnInit, ViewChild } from '@angular/core';
 import { style, state, animate, transition, trigger } from '@angular/animations';
-import { FormBuilder, Validators } from "@angular/forms";
-import {Observable, pipe, timer} from "rxjs";
-import {map, switchMap, tap} from "rxjs/operators";
+import { FormBuilder, Validators } from "@angular/forms"
+
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
 
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 
-import { faShoppingCart, faBan, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faTrash, faShoppingCart, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 
 import { InventoryService } from "../services/inventory.service";
 
@@ -35,6 +36,7 @@ import { Inventory, InventoryAdded } from "../models/inventory.model";
 export class InventoryListComponent implements OnInit {
 
   public inventories$: Observable<Inventory[]>;
+  public inventories: Inventory[];
   public brandLogoSrc: string;
 
   @ViewChild('addInventoryDialog')
@@ -56,12 +58,14 @@ export class InventoryListComponent implements OnInit {
   };
 
   public addInventoryForm = this.formBuilder.group({
-    name: ['', Validators.required]
+    name: ['', Validators.required],
+    image: ['', Validators.required]
   });
 
-  faBan = faBan;
-  faShoppingCart = faShoppingCart;
-  faCalendarDay = faCalendarDay;
+  public faBan = faBan;
+  public faTrash = faTrash;
+  public faShoppingCart = faShoppingCart;
+  public faCalendarDay = faCalendarDay;
 
   constructor(private inventoryService: InventoryService,
               private ngbModalService: NgbModal,
@@ -69,28 +73,25 @@ export class InventoryListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.inventories$ = timer(0, 30 * 1000).pipe(switchMap(() => {
-      this.inventoryAdded = {
-        inventory_name: '',
-        inventory_created: false,
-      };
-      return this.inventoryService.getInventories();
-    }));
+    this.inventories$ = this.inventoryService.getAllInventories();
     this.brandLogoSrc = isDevMode() ? 'assets/images/pantry-egg-brand.png' : './static/ang-src/assets/images/pantry-egg-brand.png';
   }
 
   addNewInventory() {
     const csrftoken = localStorage.getItem('csrf_token');
     // Trim whitespace and submit new Inventory
-    this.addInventoryForm.get('name').setValue(this.addInventoryForm.get('name').value.trim());
-    this.inventoryService.addInventory(this.addInventoryForm.get('name').value, csrftoken).pipe(map((data: InventoryAdded) => {
-      // console.log(data);
-      if (data.inventory_name.length == 0 && !data.inventory_created) {
+    let newInventory: Inventory = {
+      name: this.addInventoryForm.get('name').value.trim(),
+      image: this.addInventoryForm.get('image').value.trim()
+    }
+    this.inventoryService.addInventory(newInventory, csrftoken).pipe(map((data: InventoryAdded) => {
+      console.log(data);
+      if (data.inventory_name === null || data.inventory_name?.length == 0 && !data.inventory_created) {
         // Failed: Blank inventory name
         this.addInventoryAlert.type = 'info';
         this.addInventoryAlert.message = `Inventory names cannot be blank/empty.`;
         this.addInventoryAlert.visible = true;
-      } else if (data.inventory_name.length >= 1 && !data.inventory_created) {
+      } else if (data.inventory_name?.length >= 1 && !data.inventory_created) {
         // Failed: Existing inventory name
         this.addInventoryAlert.type = 'warning';
         this.addInventoryAlert.message = `An Inventory called '${data.inventory_name}' already exists, try another name.`;
@@ -100,7 +101,6 @@ export class InventoryListComponent implements OnInit {
         this.inventoryAdded = data;
         this.addInventoryAlert.message = `An Inventory called '${data.inventory_name}' has been created.`;
         this.closeAllDialogModals('New Inventory Created');
-        this.inventories$ = this.inventoryService.getInventories();
       }
     })).subscribe();
   }
@@ -110,13 +110,13 @@ export class InventoryListComponent implements OnInit {
     this.inventoryService.deleteInventory(inventoryId, csrftoken).pipe(map(data => {
       console.log('deleteInventory:', data);
       this.closeAllDialogModals('New Inventory Created');
-      this.inventories$ = this.inventoryService.getInventories();
     })).subscribe();
   }
 
   createAddInventoryForm() {
     this.addInventoryForm = this.formBuilder.group({
-      name: ['', Validators.required]
+      name: ['', Validators.required],
+      image: ['', Validators.required]
     });
   }
 

@@ -63,6 +63,48 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
   badgeClass: string = '';
   badgeString: string = '';
 
+  private blankProduct = {
+    _keywords: [],
+    additives_tags: [],
+    brands: "",
+    brands_tags: [],
+    categories: "",
+    code: "",
+    countries_lc: "",
+    created_t: 0,
+    data_quality_tags: [],
+    id: 0,
+    image_front_url: "",
+    image_ingredients_url: "",
+    image_thumb_url: "",
+    image_url: "",
+    ingredients: [],
+    ingredients_from_palm_oil_n: 0,
+    ingredients_hierarchy: [],
+    ingredients_original_tags: [],
+    ingredients_tags: [],
+    ingredients_text_en: "",
+    ingredients_text_with_allergens: "",
+    ingredients_text_with_allergens_en: "",
+    ingredients_that_may_be_from_palm_oil_tags: [],
+    lang: "",
+    last_modified_t: 0,
+    lc: "",
+    nutriments: undefined,
+    nutrition_data_per: "",
+    nutrition_data_prepared_per: "",
+    popularity_tags: [],
+    product_name: "",
+    product_name_en: "",
+    product_name_fr: "",
+    quantity: "",
+    scans_n: 0,
+    selected_images: undefined,
+    states: "",
+    states_tags: [],
+    unique_scans_n: 0
+  }
+
   constructor(private openFoodFactsService: OpenFoodFactsService) {
   }
 
@@ -127,25 +169,36 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
           this.barcodeResultString = data.product.product_name;
           this.badgeClass = 'badge-success';
           this.badgeString = 'SUCCESS';
-
-          // Emit the data - parent component will close the modal
-          this.newProductQueryEvent.emit(data);
-
         } else {
           console.warn('[FAILED] ', data.status_verbose);
           this.barcodeResultString = data.status_verbose;
           this.badgeClass = 'badge-danger';
           this.badgeString = 'FAILED';
+          this.emitEmptyProductQuery(barcodeData, data.status_verbose, data.status);
         }
+        // Emit the data - parent component will close the modal
+        this.newProductQueryEvent.emit(data);
       }),
       catchError(err => {
-        this.barcodeResultString = err;
+        this.barcodeResultString = `[${err.status}] '${err.statusText}'`;
         this.badgeClass = 'badge-danger'
         this.badgeString = 'ERROR'
+        this.emitEmptyProductQuery(barcodeData, err.statusText, err.status);
         console.error('[ERROR] ', err);
         return throwError(err);
       })
     ).subscribe();
+  }
+
+  emitEmptyProductQuery(barcodeData: string, status_verbose: string, status: number) {
+    let data: ProductQuery = {
+      product: this.blankProduct,
+      status_verbose: status_verbose,
+      status: status,
+      code: barcodeData
+    };
+    data.product.code = barcodeData;
+    this.newProductQueryEvent.emit(data);
   }
 
   scanErrorHandler(event) {

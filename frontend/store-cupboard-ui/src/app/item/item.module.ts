@@ -1,29 +1,33 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from "@angular/router";
 
+import { NgbAlertModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
 import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
+import { ZXingScannerModule } from "@zxing/ngx-scanner";
 
-import { ScanModule } from "../scan/scan.module";
+import { SharedModule } from "../shared/shared.module";
 
 import { ItemRoutingModule } from "./item-routing.module";
 
 import { ItemListComponent } from './item-list/item-list.component';
-import {NgbAlertModule} from "@ng-bootstrap/ng-bootstrap";
+import { ScanBarcodeComponent } from "../shared/scan-barcode/scan-barcode.component";
 
 
 @NgModule({
-  declarations: [ItemListComponent],
+  declarations: [ItemListComponent, ScanBarcodeComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
     ItemRoutingModule,
     FontAwesomeModule,
-    ScanModule,
     NgbAlertModule,
-    FormsModule
+    FormsModule,
+    NgbTooltipModule,
+    ZXingScannerModule,
+    SharedModule
   ]
 })
 export class ItemModule { }

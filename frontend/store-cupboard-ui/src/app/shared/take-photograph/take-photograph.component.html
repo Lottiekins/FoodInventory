@@ -1,0 +1,43 @@
+<div class="container">
+  <div class="d-flex flex-column">
+
+    <div class="img-thumbnail p-1" [hidden]="happyWithThePic">
+      <div class="d-flex justify-content-center" *ngIf="!stream?.active">
+        <div class="text-center text-muted p-5 m-5">
+          <div class="">
+            <fa-icon [icon]="faCamera" size="3x"></fa-icon>
+          </div>
+          <div class="">
+            <span class="">Starting Camera...</span>
+          </div>
+        </div>
+      </div>
+      <video id="videoElement" class="w-100" autoplay [hidden]="!stream?.active"></video>
+    </div>
+
+    <div class="img-thumbnail p-1" [hidden]="!happyWithThePic">
+      <canvas id="canvasElement" class="h-100 w-100"></canvas>
+    </div>
+
+    <ng-container *ngIf="!happyWithThePic; else confirmHHappyWithThePic">
+      <div class="d-flex justify-content-center mt-2 w-100">
+        <button class="btn btn-primary" [disabled]="!stream?.active" (click)="captureProductImage()">
+          <fa-icon class="mr-1" [icon]="faCamera"></fa-icon> Capture Image</button>
+      </div>
+    </ng-container>
+
+    <ng-template #confirmHHappyWithThePic>
+      <div class="d-flex justify-content-around mt-2 w-100">
+        <div class="">
+          <button class="btn btn-block btn-danger" (click)="toggleHappyWithThePic()">
+            <fa-icon class="mr-1" [icon]="faThumbsDown"></fa-icon> Looks Shit</button>
+        </div>
+        <div class="">
+          <button class="btn btn-block btn-success" (click)="emitProductImage()">
+            <fa-icon class="mr-1" [icon]="faThumbsUp"></fa-icon> Fucking Lit</button>
+        </div>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

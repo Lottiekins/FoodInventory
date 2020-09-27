@@ -13,8 +13,8 @@ import { SharedModule } from "./shared/shared.module";
 import { ItemModule } from "./item/item.module";
 import { InventoryModule } from "./inventory/inventory.module";
 
-import { OpenFoodFactsService } from "./scan/services/openfoodfacts.service";
-import { WikipediaApiService } from "./scan/services/wikipedia-api.service";
+import { OpenFoodFactsService } from "./shared/services/openfoodfacts.service";
+import { WikipediaApiService } from "./shared/services/wikipedia-api.service";
 
 import { AppComponent } from './app.component';
 
