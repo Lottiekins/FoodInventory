@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('inventories', views.get_all_inventories),
+    path('inventory/<int:inventory_id>', views.get_inventory),
     path('inventory/add', views.add_inventory),
     path('inventory/delete/<int:inventory_id>', views.delete_inventory),
 

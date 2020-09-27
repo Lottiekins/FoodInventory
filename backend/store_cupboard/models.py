@@ -21,7 +21,7 @@ weight_format_choices = (
 
 class Inventory(models.Model):
     name = models.CharField(default='', max_length=200)
-    image = models.CharField(default=None, blank=True, null=True, max_length=2048)
+    image = models.CharField(default=None, blank=True, null=True, max_length=81920)
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
 
@@ -47,7 +47,8 @@ class Manufacturer(models.Model):
 
 
 class Brand(models.Model):
-    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.DO_NOTHING, related_name='manufacturer', default=None)
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.DO_NOTHING,
+                                     related_name='manufacturer', default=None)
     name = models.CharField(default='', max_length=200)
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
@@ -67,7 +68,7 @@ class Item(models.Model):
     total_weight = models.FloatField(default=0.0, blank=True, null=True)
     total_weight_format = models.CharField(default=GRAM, choices=weight_format_choices, max_length=2,
                                            blank=True, null=True)
-    image = models.CharField(default=None, blank=True, null=True, max_length=2048)
+    image = models.CharField(default=None, blank=True, null=True, max_length=81920)
     portionable = models.BooleanField(default=False, blank=True)
     group_serving = models.IntegerField(default=None, blank=True, null=True)
     portion_weight = models.FloatField(default=0.0, blank=True, null=True)
