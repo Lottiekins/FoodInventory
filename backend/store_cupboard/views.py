@@ -73,6 +73,19 @@ def add_inventory(request):
 
 
 @csrf_exempt
+def update_inventory_image(request, inventory_id: int):
+    if request.method == 'POST':
+        image_data_uri: str = request.body.decode("utf-8")
+        inventory = Inventory.objects.filter(id=inventory_id)
+        if inventory:
+            inventory.update(image=image_data_uri)
+            response = bool(inventory)
+            print('inventory image updated:', bool(inventory))
+            return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+@csrf_exempt
 def delete_inventory(request, inventory_id: int):
     if request.method == 'DELETE':
         inventory, inventory_deleted = Inventory.objects.filter(id=inventory_id).delete()
@@ -111,6 +124,19 @@ def get_all_items(request):
                                    sort_keys=True,
                                    indent=1,
                                    cls=DjangoJSONEncoder), content_type="application/json")
+
+
+@csrf_exempt
+def update_item_image(request, item_id: int):
+    if request.method == 'POST':
+        image_data_uri: str = request.body.decode("utf-8")
+        item = Item.objects.filter(id=item_id)
+        if item:
+            item.update(image=image_data_uri)
+            response = bool(item)
+            print('item image updated:', bool(item))
+            return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
 
 
 @csrf_exempt

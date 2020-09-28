@@ -5,11 +5,13 @@ from . import views
 urlpatterns = [
     path('inventories', views.get_all_inventories),
     path('inventory/<int:inventory_id>', views.get_inventory),
+    path('inventory/update/<int:inventory_id>/image', views.update_inventory_image),
     path('inventory/add', views.add_inventory),
     path('inventory/delete/<int:inventory_id>', views.delete_inventory),
 
     path('items', views.get_all_items),
     path('item/<int:item_id>', views.get_item),
+    path('item/update/<int:item_id>/image', views.update_item_image),
     path('item/add/', views.add_item),
     path('item/del/<int:item_id>', views.delete_item),
 
