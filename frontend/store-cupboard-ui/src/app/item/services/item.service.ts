@@ -48,6 +48,12 @@ export class ItemService implements OnDestroy {
     return this.http.post<ItemAdded>(url, item, {headers});
   }
 
+  updateItemImage(id: number, toDataURL: string, csrftoken: string): Observable<boolean> {
+    const url = `https://192.168.1.13:8000/api/v1/item/update/${id}/image`;
+    const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : '' });
+    return this.http.post<boolean>(url, toDataURL, {headers});
+  }
+
   deleteItem(id: number, csrftoken: string): Observable<boolean> {
     const url = `https://192.168.1.13:8000/api/v1/item/del/${id}`;
     const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : '' });

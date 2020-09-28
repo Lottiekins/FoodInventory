@@ -215,10 +215,10 @@ export class ItemListComponent implements OnInit {
         },
         name: this.addItemForm.get('brands').value
       },
-      name: this.addItemForm.get('name').value,
+      name: this.addItemForm.get('name').value.trim(),
       total_weight: this.addItemForm.get('total_weight').value,
       total_weight_format: this.addItemForm.get('total_weight_format').value,
-      image: this.addItemForm.get('image').value,
+      image: this.addItemForm.get('image').value.trim(),
       portionable: this.showPortionableFields,
       group_serving: this.addItemForm.get('group_serving').value,
       portion_weight: this.addItemForm.get('portion_weight').value,

@@ -81,6 +81,22 @@
 </ng-template>
 
 
+<ng-template #photographProduct>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-photographProduct">Photograph Product</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <app-take-photograph (newDataURLEvent)="onEmitNewDataURLEvent($event)"></app-take-photograph>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
+  </div>
+</ng-template>
+
+
 <ng-template #addInventoryDialog>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-addItemDialog">Add Inventory</h4>
@@ -99,8 +115,21 @@
         <input id="name" class="form-control" formControlName="name" placeholder="Kitchen, Fridge, etc...">
       </div>
       <div class="form-group">
-        <label for="image">Image:</label>
-        <input id="image" class="form-control" formControlName="image" placeholder="Image URL">
+        <div class="d-flex justify-content-between">
+          <div class="w-75">
+            <label for="image">Inventory Image:</label>
+            <input id="image" class="form-control" formControlName="image" placeholder="Image URL">
+            <div class="mt-1">
+              <span class="small text-muted text-justify"><fa-icon class="mr-1" [icon]="faCamera"></fa-icon> Click the image preview to take a photograph!</span>
+            </div>
+          </div>
+          <div class="d-flex flex-fill w-25 ml-2">
+            <img class="img-fluid img-thumbnail" alt="Inventory Image"
+                 (click)="openCaptureProductImageModal()"
+                 [src]="addInventoryForm.get('image').value ? addInventoryForm.get('image').value
+                                                            : 'https://via.placeholder.com/300?text=No+Image'">
+          </div>
+        </div>
       </div>
     </form>
   </div>

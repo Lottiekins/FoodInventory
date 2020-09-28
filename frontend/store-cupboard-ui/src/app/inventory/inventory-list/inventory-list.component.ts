@@ -7,7 +7,7 @@ import { map } from "rxjs/operators";
 
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 
-import { faBan, faTrash, faShoppingCart, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faTrash, faCamera, faShoppingCart, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 
 import { InventoryService } from "../services/inventory.service";
 
@@ -46,6 +46,11 @@ export class InventoryListComponent implements OnInit {
   public deleteConfirmDialog: NgbModalRef;
   public inventoryMarkedForDeletion: Inventory;
 
+  @ViewChild('photographProduct')
+  public photographProduct: NgbModalRef;
+
+  public activeModal: NgbModalRef;
+
   public addInventoryAlert: Alert = {
     type: 'info',
     message: '-',
@@ -59,11 +64,12 @@ export class InventoryListComponent implements OnInit {
 
   public addInventoryForm = this.formBuilder.group({
     name: ['', Validators.required],
-    image: ['', Validators.required]
+    image: ['https://via.placeholder.com/150?text=No+Product+Image', Validators.required]
   });
 
   public faBan = faBan;
   public faTrash = faTrash;
+  public faCamera = faCamera;
   public faShoppingCart = faShoppingCart;
   public faCalendarDay = faCalendarDay;
 
@@ -116,8 +122,18 @@ export class InventoryListComponent implements OnInit {
   createAddInventoryForm() {
     this.addInventoryForm = this.formBuilder.group({
       name: ['', Validators.required],
-      image: ['', Validators.required]
+      image: ['https://via.placeholder.com/300?text=No+Image', Validators.required]
     });
+  }
+
+  openCaptureProductImageModal() {
+    this.activeModal = this.ngbModalService.open(this.photographProduct, {backdrop: 'static'});
+  }
+
+  onEmitNewDataURLEvent(dataURL: string) {
+    console.log('onEmitNewDataURLEvent:', dataURL);
+    this.activeModal.close();
+    this.addInventoryForm.get('image')?.setValue(dataURL);
   }
 
   openAddInventoryDialogModal(): void {

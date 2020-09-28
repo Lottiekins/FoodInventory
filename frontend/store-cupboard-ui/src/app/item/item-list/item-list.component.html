@@ -204,19 +204,22 @@
       </div>
       <div class="form-group">
         <label for="name">Product Name:</label>
-        <input id="name" class="form-control" formControlName="name">
+        <input id="name" class="form-control" formControlName="name" placeholder="Bread, Coke Cola, Ice Cream, etc...">
       </div>
       <div class="form-group">
         <div class="d-flex justify-content-between">
           <div class="w-75">
             <label for="image">Product Image:</label>
-            <input id="image" class="form-control" formControlName="image">
+            <input id="image" class="form-control" formControlName="image" placeholder="Image URL">
+            <div class="mt-1">
+              <span class="small text-muted text-justify"><fa-icon class="mr-1" [icon]="faCamera"></fa-icon> Click the image preview to take a photograph!</span>
+            </div>
           </div>
           <div class="d-flex flex-fill w-25 ml-2">
             <img class="img-fluid img-thumbnail" alt="Product Image"
                  (click)="openCaptureProductImageModal()"
                  [src]="addItemForm.get('image').value ? addItemForm.get('image').value
-                                                       : 'https://via.placeholder.com/300?text=No+Product+Image'">
+                                                       : 'https://via.placeholder.com/300?text=No+Image'">
           </div>
         </div>
       </div>

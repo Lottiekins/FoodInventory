@@ -11,6 +11,7 @@ import { InventoryRoutingModule } from "./inventory-routing.module";
 
 import { InventoryListComponent } from './inventory-list/inventory-list.component';
 import { InventoryDetailComponent } from './inventory-detail/inventory-detail.component';
+import {SharedModule} from "../shared/shared.module";
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { InventoryDetailComponent } from './inventory-detail/inventory-detail.co
         FontAwesomeModule,
         ReactiveFormsModule,
         NgbAlertModule,
-        NgbTooltipModule
+        NgbTooltipModule,
+        SharedModule
     ]
 })
 export class InventoryModule { }

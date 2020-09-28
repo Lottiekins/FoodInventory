@@ -30,6 +30,7 @@
     "bootstrap": "^4.5.2",
     "bootswatch": "^4.5.2",
     "ngx-barcode": "^0.3.0",
+    "ngx-webcam": "^0.3.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
