@@ -6,6 +6,9 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootswatch/dist/darkly/bootswatch";
 
+@import "../node_modules/ag-grid-community/dist/styles/ag-grid.min.css";
+@import "../node_modules/ag-grid-community/dist/styles/ag-theme-balham-dark.min.css";
+
 html, body {
   height: 100%;
 }

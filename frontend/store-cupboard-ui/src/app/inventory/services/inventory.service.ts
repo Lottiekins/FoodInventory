@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 
 import { Observable, Subject, timer } from "rxjs";
-import {map, retry, share, switchMap, takeUntil} from "rxjs/operators";
+import { map, retry, share, switchMap, takeUntil } from "rxjs/operators";
 
 import { Inventory, InventoryAdded } from "../models/inventory.model";
 
