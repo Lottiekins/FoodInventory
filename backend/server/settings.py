@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'sslserver',
     'rest_framework',
     'store_cupboard',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,8 @@ CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     'https://192.168.1.13:8080',
 )
+
+AUTH_USER_MODEL = 'users.CustomUser'
 
 ROOT_URLCONF = 'server.urls'
 

@@ -2,6 +2,7 @@ from socket import timeout
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
+from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from requests import Timeout
@@ -12,7 +13,7 @@ import json
 
 from urllib3.exceptions import ConnectTimeoutError, ReadTimeoutError
 
-from .models import Brand, Item, Inventory, Manufacturer
+from .models import Brand, Item, Inventory, Manufacturer, InventoryItem
 
 
 # ============================================================================================
@@ -100,7 +101,7 @@ def delete_inventory(request, inventory_id: int):
 #   Items
 #
 # ============================================================================================
-def get_item(request, item_id: str):
+def get_item(request, item_id: int):
     response = json.dumps([{}])
     if request.method == 'GET':
         try:
@@ -187,6 +188,79 @@ def delete_item(request, item_id: int):
         item, item_deleted = Item.objects.filter(id=item_id).delete()
         response = bool(item)
         print('item:', bool(item), '; item_deleted:', item_deleted)
+        return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+# ============================================================================================
+#
+#   Inventory Items
+#
+# ============================================================================================
+def get_inventory_item(request, inventory_item_id: int):
+    response = json.dumps([{}])
+    if request.method == 'GET':
+        try:
+            response = list(InventoryItem.objects.filter(id=inventory_item_id).values())
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No inventory_item with that name'}])
+    return HttpResponse(json.dumps(response,
+                                   sort_keys=True,
+                                   indent=1,
+                                   cls=DjangoJSONEncoder), content_type="application/json")
+
+
+def get_all_inventory_items(request, inventory_id: int):
+    response = json.dumps({})
+    if request.method == 'GET':
+        try:
+            inventory_items = InventoryItem.objects.select_related('inventory', 'item',
+                                                                   'opened_by_custom_user', 'consumed_by_custom_user')\
+                .filter(inventory=inventory_id)\
+                .values('id', 'item__name', 'item__image',
+                        'inventory_id', 'inventory__name', 'purchase_date', 'expiration_date',
+                        'opened', 'opened_date', 'opened_by_id__username',
+                        'consumed', 'consumption_date', 'consumed_by_id__username')
+
+            response = list(inventory_items)
+            # print('response:', response)
+            return HttpResponse(json.dumps(response,
+                                           sort_keys=True,
+                                           indent=1,
+                                           cls=DjangoJSONEncoder), content_type="application/json")
+        except ObjectDoesNotExist:
+            response = json.dumps([{'Error': 'No inventory_item with that name'}])
+    return HttpResponse(response, content_type="application/json")
+
+
+@csrf_exempt
+def add_inventory_item(request):
+    response = json.dumps({})
+    if request.method == 'POST':
+        inventory_item = json.loads(request.body)
+        response = inventory_item
+    return HttpResponse(response, content_type="application/json")
+
+
+@csrf_exempt
+def update_inventory_item(request, inventory_item_id: int):
+    if request.method == 'POST':
+        new_inventory_item = json.loads(request.body)
+        inventory_item = InventoryItem.objects.filter(id=inventory_item_id)
+        if inventory_item:
+            inventory_item.update(new_inventory_item)
+            response = bool(inventory_item)
+            print('inventory_item updated:', bool(inventory_item))
+            return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+@csrf_exempt
+def delete_inventory_item(request, inventory_item_id: int):
+    if request.method == 'DELETE':
+        inventory_item, inventory_item_deleted = InventoryItem.objects.filter(id=inventory_item_id).delete()
+        response = bool(inventory_item)
+        print('inventory_item:', bool(inventory_item), '; inventory_item_deleted:', inventory_item_deleted)
         return HttpResponse(json.dumps(response), content_type="application/json")
     return HttpResponse(False, content_type="application/json")
 

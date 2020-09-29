@@ -5,7 +5,7 @@ from django.utils import timezone
 
 import json
 
-CustomUser = get_user_model()
+from users.models import CustomUser
 
 GRAM = 'g'
 KILOGRAM = 'Kg'
@@ -121,14 +121,14 @@ class InventoryItem(models.Model):
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name='inventory')
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='item')
     purchase_date = models.DateTimeField(default=timezone.now)
-    expiration_date = models.DateTimeField(default=timezone.now)
+    expiration_date = models.DateTimeField(default=None, blank=True, null=True)
     opened = models.BooleanField(default=False, blank=True)
     opened_date = models.DateTimeField(default=None, blank=True, null=True)
-    opened_by_id = models.ForeignKey(CustomUser, related_name='opened_by',
+    opened_by_id = models.ForeignKey(CustomUser, related_name='opened_by_custom_user',
                                      on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
     consumed = models.BooleanField(default=False, blank=True)
     consumption_date = models.DateTimeField(default=None, blank=True, null=True)
-    consumed_by_id = models.ForeignKey(CustomUser, related_name='consumed_by',
+    consumed_by_id = models.ForeignKey(CustomUser, related_name='consumed_by_custom_user',
                                        on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
@@ -139,3 +139,45 @@ class InventoryItem(models.Model):
 
     def __str__(self):
         return self.item.name
+
+    def to_json(self, opened_by_id__username, consumed_by_id__username):
+        return json.dumps({
+            'inventory_item__id': self.id,
+            'inventory_item__inventory_id': self.inventory.id,
+            'inventory_item__item_id': self.item.id,
+            'inventory_item__purchase_date': self.purchase_date,
+            'inventory_item__expiration_date': self.expiration_date,
+            'inventory_item__opened': self.opened,
+            'inventory_item__opened_date': self.opened_date,
+            'inventory_item__opened_by_id': self.opened_by_id,
+            'opened_by_id__username': opened_by_id__username,
+            'inventory_item__consumed': self.consumed,
+            'inventory_item__consumption_date': self.consumption_date,
+            'inventory_item__consumed_by_id': self.consumed_by_id,
+            'consumed_by_id__username': consumed_by_id__username,
+            'inventory_item__created_on': self.created_on,
+            'inventory_item__modified_on': self.modified_on,
+            'inventory__id': self.inventory.id,
+            'inventory__name': self.inventory.name,
+            'inventory__image" as "inventory_image': self.inventory.image,
+            'inventory__created_on': self.inventory.created_on,
+            'inventory__modified_on': self.inventory.modified_on,
+            'item__id': self.item.id,
+            'item__barcode': self.item.barcode,
+            'item__brand_id': self.item.brand.id,
+            'item__name': self.item.name,
+            'item__total_weight': self.item.total_weight,
+            'item__total_weight_format': self.item.total_weight_format,
+            'item__image" as "item_image': self.item.image,
+            'item__portionable': self.item.portionable,
+            'item__group_serving': self.item.group_serving,
+            'item__portion_weight': self.item.portion_weight,
+            'item__portion_weight_format': self.item.portion_weight_format,
+            'item__consume_within_x_days_of_opening': self.item.consume_within_x_days_of_opening,
+            'item__created_on': self.item.created_on,
+            'item__modified_on': self.item.modified_on,
+        },
+            sort_keys=True,
+            indent=1,
+            cls=DjangoJSONEncoder
+        )
