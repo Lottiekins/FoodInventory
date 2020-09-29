@@ -9,7 +9,7 @@
             <p class="lead my-1">
               Tracking the groceries in your fridge, freezer, and pantry is simple with <b>Pantry</b>!
             </p>
-            <p class="lead my-1">
+            <p class="d-none d-md-block lead my-1">
               It provides shopping list capabilities, as well as allowing you to scan barcodes on individual
               products for easier entry.
             </p>
@@ -26,16 +26,19 @@
       </div>
     </div>
 
-    <p>
+    <p class="d-none d-md-block">
       Plus, if you are at the grocery store and cannot remember if you need to replace a certain product, the
       barcode scanner allows the app to notify you if you are running low and need to purchase. Choose a specific
       storage area for each item and you will be able to look in each location for what is ready for use.
     </p>
 
-    <hr class="my-4">
-
-    <div class="d-flex justify-content-end">
-      <a class="btn btn-primary btn-lg" role="button" [routerLink]="'/inventories'">Browse Inventories</a>
+    <div class="d-flex justify-content-around">
+      <div class="mx-2">
+        <a class="btn btn-primary btn-lg" role="button" [routerLink]="'/inventory'">Browse Inventories</a>
+      </div>
+      <div class="mx-2">
+        <a class="btn btn-primary btn-lg" role="button" [routerLink]="'/item'">Browse Products</a>
+      </div>
     </div>
 
   </div>

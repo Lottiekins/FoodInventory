@@ -2,9 +2,9 @@
   <div class="d-flex justify-content-center flex-grow-1">
     <div class="d-flex flex-column w-75">
 
-      <div class="d-flex justify-content-between">
-        <h1>Items</h1>
-        <div class="d-flex align-items-center">
+      <div class="d-flex justify-content-between my-2">
+        <h1 class="text-truncate">Products</h1>
+        <div class="d-flex align-items-center ml-2">
           <button type="button" class="btn btn-secondary" (click)="openScanningModal()">
             <fa-icon [icon]="faBarcode" class="mr-2"></fa-icon> Scan Barcode
           </button>
@@ -14,43 +14,43 @@
       <ng-container *ngIf="(items$ | async) as items">
         <ng-container *ngIf="items?.length >= 1; else noItems">
           <div class="card-columns">
-            <ng-template ngFor [ngForOf]="items" let-item let-i="index">
+            <ng-template ngFor [ngForOf]="items" let-item>
               <div class="card">
-                <div class="d-flex flex-row">
-                  <div class="d-flex justify-content-center w-50">
-                    <div class="d-flex align-self-center">
-                      <img class="card-img-top" alt="pantry egg logo"
-                           src="{{ item.image }}">
-                    </div>
-                  </div>
-                  <div class="card-body w-50">
-                    <div class="d-flex flex-row h-100">
-                      <div class="d-flex flex-grow-1 flex-column">
-                        <h6 class="card-title">{{ item.name }}</h6>
-                        <div class="d-flex flex-grow-1 flex-column card-text">
-                          <ng-container *ngIf="item.portionable;">
-                            <div><span class="badge badge-secondary">Portionable</span></div>
-                            <div>{{ item.group_serving }} Servings</div>
-                          </ng-container>
-                          <div class="ml-auto mt-auto">
-                            <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
-                          </div>
-                        </div>
+                <img class="card-img-top" alt="item.image" [src]="item.image">
+                <div class="card-body p-3">
+                  <h6 class="card-title mb-2">{{ item.name }}</h6>
+                  <div class="card-text">
+                    <div class="d-flex justify-content-between">
+                      <ng-container *ngIf="item.portionable;">
+                        <div><span class="badge badge-light mr-1">Portionable</span></div>
+                        <div>{{ item.group_serving }} Servings</div>
+                      </ng-container>
+                      <div class="ml-auto mt-auto">
+                        <small class="text-muted">{{ item.total_weight }}{{ item.total_weight_format }}</small>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div class="card-footer">
-                  <div class="d-flex justify-content-between">
-                    <div class="d-flex align-self-center">
-                      <div class="d-flex flex-column">
-                        <small class="text-muted">#{{ i }}</small>
-                        <small class="text-muted" title="Created Date"><fa-icon [icon]="faCalendarDay"></fa-icon> {{ item.created_on | date }}</small>
+                  <div class="d-flex justify-content-between w-100">
+                    <div class="d-flex align-self-center" style="width: 40%;">
+                      <div class="d-flex flex-column" style="width: 90%;">
+                        <small class="text-muted text-truncate">
+                          <fa-icon [icon]="faBarcode"></fa-icon> {{ item.barcode }}</small>
+                        <small class="text-muted text-nowrap text-truncate" title="Created Date">
+                          <fa-icon [icon]="faCalendarDay"></fa-icon> {{ item.created_on | date }}</small>
                       </div>
                     </div>
                     <div class="d-flex align-self-center">
-                      <button class="btn btn-sm btn-outline-danger mr-2" (click)="openDeleteConfirmDialog(item)">Delete</button>
-                      <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-outline-info">Details</a>
+                      <div class="d-flex justify-content-end">
+                        <button class="btn btn-sm btn-outline-danger mr-2" (click)="openDeleteConfirmDialog(item)"
+                                ngbTooltip="Delete Item" tooltipClass="tooltip-danger" placement="top">
+                          <fa-icon [icon]="faTrash"></fa-icon>
+                        </button>
+                        <div class="">
+                          <a [routerLink]="['/item/' + item.id]" class="btn btn-sm btn-outline-info">Details</a>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -121,7 +121,24 @@
     </button>
   </div>
   <div class="modal-body">
-    <app-scan-barcode (newProductQueryEvent)="onEmitNewProductQueryEvent($event)"></app-scan-barcode>
+    <app-scan-barcode (newProductQueryEvent)="onEmitNewProductQueryEvent($event)"
+                      (existingItemEvent)="onExistingItemEvent($event)"></app-scan-barcode>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
+  </div>
+</ng-template>
+
+
+<ng-template #photographProduct>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-photographProduct">Photograph Product</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <app-take-photograph (newDataURLEvent)="onEmitNewDataURLEvent($event)"></app-take-photograph>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
@@ -151,10 +168,15 @@
         <div class="d-flex justify-content-between">
           <div class="flex-fill">
             <label for="manufacturer">Manufacturer:</label>
-            <input id="manufacturer" class="form-control" formControlName="manufacturer">
+            <input id="manufacturer" class="form-control" formControlName="manufacturer"
+                   [readOnly]="addItemForm.get('name').value.length == 0"
+                   [placeholder]="addItemForm.get('name').value.length == 0 ? 'Add a Product Name' : ''">
           </div>
           <div class="d-flex align-self-end ml-2">
-            <button type="button" class="btn btn-outline-warning" aria-label="Close"
+            <button type="button" class="btn" aria-label="Close"
+                    [disabled]="addItemForm.get('name').value.length == 0"
+                    [ngClass]="addItemForm.get('name').value.length == 0 ? 'btn-outline-light' : 'btn-outline-warning'"
+                    [title]="addItemForm.get('name').value.length == 0 ? 'disabled' : 'Search Wikipedia for a Manufacturer'"
                     (click)="findManufacturerName()">
               <fa-icon [icon]="faSearchEngine"></fa-icon> Wikipedia
             </button>
@@ -165,10 +187,15 @@
         <div class="d-flex justify-content-between">
           <div class="flex-fill">
             <label for="brands">Brand Name(s):</label>
-            <input id="brands" class="form-control" formControlName="brands">
+            <input id="brands" class="form-control" formControlName="brands"
+                   [readOnly]="addItemForm.get('name').value.length == 0"
+                   [placeholder]="addItemForm.get('name').value.length == 0 ? 'Add a Product Name' : ''">
           </div>
           <div class="d-flex align-self-end ml-2">
-            <button type="button" class="btn btn-outline-warning" aria-label="Close"
+            <button type="button" class="btn" aria-label="Close"
+                    [disabled]="addItemForm.get('name').value.length == 0"
+                    [ngClass]="addItemForm.get('name').value.length == 0 ? 'btn-outline-light' : 'btn-outline-warning'"
+                    [title]="addItemForm.get('name').value.length == 0 ? 'disabled' : 'Search Wikipedia for a Brand Name'"
                     (click)="findBrandName()">
               <fa-icon [icon]="faSearchEngine"></fa-icon> Wikipedia
             </button>
@@ -177,18 +204,22 @@
       </div>
       <div class="form-group">
         <label for="name">Product Name:</label>
-        <input id="name" class="form-control" formControlName="name">
+        <input id="name" class="form-control" formControlName="name" placeholder="Bread, Coke Cola, Ice Cream, etc...">
       </div>
       <div class="form-group">
         <div class="d-flex justify-content-between">
           <div class="w-75">
             <label for="image">Product Image:</label>
-            <input id="image" class="form-control" formControlName="image">
+            <input id="image" class="form-control" formControlName="image" placeholder="Image URL">
+            <div class="mt-1">
+              <span class="small text-muted text-justify"><fa-icon class="mr-1" [icon]="faCamera"></fa-icon> Click the image preview to take a photograph!</span>
+            </div>
           </div>
           <div class="d-flex flex-fill w-25 ml-2">
             <img class="img-fluid img-thumbnail" alt="Product Image"
+                 (click)="openCaptureProductImageModal()"
                  [src]="addItemForm.get('image').value ? addItemForm.get('image').value
-                                                       : 'https://via.placeholder.com/300?text=No+Product+Image'">
+                                                       : 'https://via.placeholder.com/300?text=No+Image'">
           </div>
         </div>
       </div>
@@ -200,7 +231,6 @@
                    formControlName="total_weight">
             <div class="input-group-append">
               <select class="custom-select" id="total_weight_select" formControlName="total_weight_format">
-                <option [value]="null">Choose...</option>
                 <option *ngFor="let weightFormatChoice of weightFormatChoicesEnum"
                         [ngValue]="getWeightFormatEnum(weightFormatChoice[0])">{{ weightFormatChoice[1] }}</option>
               </select>
@@ -232,11 +262,10 @@
                      formControlName="portion_weight">
               <div class="input-group-append">
                 <select class="custom-select" id="portion_weight_select" formControlName="portion_weight_format">
-                  <option [value]="null">Choose...</option>
                   <option *ngFor="let weightFormatChoice of weightFormatChoicesEnum"
                           [ngValue]="getWeightFormatEnum(weightFormatChoice[0])">{{ weightFormatChoice[1] }}</option>
                 </select>
-                <label class="input-group-text" for="total_weight_select">
+                <label class="input-group-text" for="portion_weight_select">
                   {{ addItemForm.get('portion_weight_format').value }}
                 </label>
               </div>

@@ -6,6 +6,9 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootswatch/dist/darkly/bootswatch";
 
+@import "../node_modules/ag-grid-community/dist/styles/ag-grid.min.css";
+@import "../node_modules/ag-grid-community/dist/styles/ag-theme-balham-dark.min.css";
+
 html, body {
   height: 100%;
 }
@@ -13,4 +16,11 @@ html, body {
 router-outlet + * {
   display: flex;
   flex-grow: 1;
+}
+
+.tooltip-danger .tooltip-inner {
+  background-color: #e74c3c;
+}
+.tooltip-danger .arrow::before {
+  border-color: #e74c3c;
 }

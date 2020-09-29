@@ -5,6 +5,8 @@ import { CommonModule } from "@angular/common";
 import { HttpClientModule } from "@angular/common/http";
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { AgGridModule } from 'ag-grid-angular';
+import { MomentModule } from "ngx-moment";
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -13,8 +15,8 @@ import { SharedModule } from "./shared/shared.module";
 import { ItemModule } from "./item/item.module";
 import { InventoryModule } from "./inventory/inventory.module";
 
-import { OpenFoodFactsService } from "./scan/services/openfoodfacts.service";
-import { WikipediaApiService } from "./scan/services/wikipedia-api.service";
+import { OpenFoodFactsService } from "./shared/services/openfoodfacts.service";
+import { WikipediaApiService } from "./shared/services/wikipedia-api.service";
 
 import { AppComponent } from './app.component';
 
@@ -33,7 +35,9 @@ import { AppComponent } from './app.component';
     SharedModule,
     ItemModule,
     InventoryModule,
-    FontAwesomeModule
+    FontAwesomeModule,
+    MomentModule,
+    AgGridModule.withComponents([])
   ],
   providers: [
     OpenFoodFactsService,

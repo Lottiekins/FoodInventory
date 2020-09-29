@@ -1,0 +1,104 @@
+<div class="d-flex flex-column flex-grow-1">
+  <div class="d-flex justify-content-center flex-grow-1">
+    <div class="d-flex flex-column w-75">
+
+      <ng-container *ngIf="(inventory$ | async) as inventory">
+
+        <div class="d-flex justify-content-between my-2">
+          <div class="d-flex justify-content-start">
+            <div style="max-width: 64vw;">
+              <h1 class="text-truncate" [title]="inventory.name">{{ inventory.name }}</h1>
+            </div>
+            <div class="d-flex align-items-center ml-2">
+              <div class="badge badge-secondary">Inventory</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center">
+            <!-- edit? -->
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <div class="d-flex flex-column flex-grow-1 text-muted">
+            <div class="d-flex justify-content-start">
+              <fa-icon class="text-primary mr-1" [icon]="faHashtag"></fa-icon><span class="d-none d-md-block">Id</span><span class="mr-2">:</span>
+              <span class="text-light">{{ inventory.id }}</span>
+            </div>
+            <div class="d-flex justify-content-start">
+              <fa-icon class="text-primary mr-1" [icon]="faCalendarDay"></fa-icon><span class="d-none d-md-block">Created On</span><span class="mr-2">:</span>
+              <span class="text-light">{{ inventory.created_on | date: 'dd-MMM-yyyy' }}</span>
+            </div>
+            <div class="d-flex justify-content-start">
+              <fa-icon class="text-primary mr-1" [icon]="faCalendarDay"></fa-icon><span class="d-none d-md-block">Last Modified</span><span class="mr-2">:</span>
+              <span class="text-light">{{ inventory.modified_on | date: 'dd-MMM-yyyy' }}</span>
+            </div>
+          </div>
+          <div class="w-25">
+            <div class="d-flex justify-content-end">
+              <img class="img-fluid img-thumbnail" style="max-height: 5.85em;"
+                   [src]="inventory.image" alt="inventory image"
+                   (click)="openCaptureInventoryImageModal()">
+            </div>
+          </div>
+        </div>
+
+        <div class="">
+          <div class="d-flex justify-content-between">
+            <h5 class="text-muted my-3">Itemized Products</h5>
+            <div class="d-flex align-items-center">
+              <button class="btn btn-sm btn-primary" (click)="onAddItemToInventoryClicked()">Add Item to Inventory</button>
+            </div>
+          </div>
+
+          <ag-grid-angular
+            style="width: 100%; height: 55vh; font-size: 11px;"
+            class="ag-theme-balham-dark"
+            [rowData]="inventoryItems$ | async"
+            [columnDefs]="columnDefs"
+            [columnTypes]="columnTypes"
+            [pagination]="true"
+            [paginationAutoPageSize]="true"
+            (gridReady)="onGridReady($event.type, $event.api, $event.columnApi)">
+          </ag-grid-angular>
+
+        </div>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>
+
+
+<ng-template #photographInventoryModal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-photographProduct">Photograph Inventory</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <app-take-photograph (newDataURLEvent)="onEmitNewDataURLEvent($event)"></app-take-photograph>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
+  </div>
+</ng-template>
+
+
+<ng-template #addItemToInventoryModal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-addItemToInventory">Add Item To Inventory</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeAllDialogModals('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+
+
+
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>
+  </div>
+</ng-template>

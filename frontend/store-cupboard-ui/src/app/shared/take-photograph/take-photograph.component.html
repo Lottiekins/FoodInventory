@@ -1,0 +1,76 @@
+<div class="container">
+  <div class="d-flex flex-column">
+
+    <div class="img-thumbnail p-1" style="max-height: 249px;" [hidden]="happyWithThePic">
+
+      <div class="d-flex justify-content-center" *ngIf="!detectedConstraints">
+        <div class="text-center text-muted p-5 m-5">
+          <div class="">
+            <fa-icon [icon]="faCamera" size="3x"></fa-icon>
+          </div>
+          <div class="">
+            <span class="">Starting Camera...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center">
+
+        <webcam *ngIf="detectedConstraints"
+                #ngxWebcam
+                [width]="2*16*10"
+                [height]="2*9*10"
+                [trigger]="takePhoto$"
+                [videoOptions]="mediaTrackConstraints"
+                [captureImageData]="true"
+                [hidden]="false"
+                (initError)="handleInitError($event)"
+                (cameraSwitched)="cameraWasSwitched($event)"
+                (imageCapture)="onImageCapture($event)"></webcam>
+
+      </div>
+
+    </div>
+
+    <div class="img-thumbnail p-1" [hidden]="!happyWithThePic">
+      <canvas id="canvasElement" class="w-100" style="object-fit: cover;" width="720" height="405"></canvas>
+    </div>
+
+    <ng-container *ngIf="!happyWithThePic; else confirmHHappyWithThePic">
+      <div class="d-flex justify-content-center mt-2 w-100">
+        <div>
+          <button class="btn btn-primary" [disabled]="!detectedConstraints" (click)="onCaptureImageClick()">
+            <fa-icon class="mr-1" [icon]="faCamera"></fa-icon> Capture Image</button>
+        </div>
+        <div *ngIf="isTorchCapable">
+          <button class="btn ml-2" [ngClass]="torchEnabled ? 'btn-warning' : 'btn-secondary border-warning'"
+                  [disabled]="false" (click)="toggleTorch()">
+            <fa-icon class="mr-1" [icon]="torchEnabled ? farLightbulb : fasLightbulb"></fa-icon>
+            {{ torchEnabled ? 'Switch Off' : 'Switch On' }}</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #confirmHHappyWithThePic>
+      <div class="d-flex justify-content-around mt-2 w-100">
+        <div class="">
+          <button class="btn btn-block btn-danger" (click)="toggleHappyWithThePic()">
+            <fa-icon class="mr-1" [icon]="faThumbsDown"></fa-icon> Retry</button>
+        </div>
+        <div class="">
+          <button class="btn btn-light" (click)="mirrorImage()">
+            <fa-icon class="mr-1" [icon]="faExchangeAlt"></fa-icon></button>
+        </div>
+        <div class="">
+          <button class="btn btn-light" (click)="rotateImage()">
+            <fa-icon class="mr-1" [icon]="faSync"></fa-icon></button>
+        </div>
+        <div class="">
+          <button class="btn btn-block btn-success" (click)="emitImageDataUrl()">
+            <fa-icon class="mr-1" [icon]="faThumbsUp"></fa-icon> Update</button>
+        </div>
+      </div>
+    </ng-template>
+
+  </div>
+</div>

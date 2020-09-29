@@ -3,9 +3,8 @@ import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
 const routes: Routes = [
   { path: '', loadChildren: () => import('./core/core.module').then(mod => mod.CoreModule) },
-  { path: 'inventories', loadChildren: () => import('./inventory/inventory.module').then(mod => mod.InventoryModule) },
-  { path: 'items', loadChildren: () => import('./item/item.module').then(mod => mod.ItemModule) },
-  { path: 'scan', loadChildren: () => import('./scan/scan.module').then(mod => mod.ScanModule) },
+  { path: 'inventory', loadChildren: () => import('./inventory/inventory.module').then(mod => mod.InventoryModule) },
+  { path: 'item', loadChildren: () => import('./item/item.module').then(mod => mod.ItemModule) },
   { path: '**', loadChildren: () => import('./core/core.module').then(mod => mod.CoreModule) },
 ];
 

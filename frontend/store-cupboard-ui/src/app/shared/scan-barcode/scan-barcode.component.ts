@@ -9,9 +9,11 @@ import { ZXingScannerComponent } from "@zxing/ngx-scanner";
 import { faLightbulb as fasLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { faLightbulb as farLightbulb } from '@fortawesome/free-regular-svg-icons';
 
+import { ItemService } from "../../item/services/item.service";
 import { OpenFoodFactsService } from "../services/openfoodfacts.service";
 
 import { ProductQuery } from "../models/openfoodfacts.modal";
+import { Item } from "../../item/models/item.model";
 
 
 @Component({
@@ -22,6 +24,7 @@ import { ProductQuery } from "../models/openfoodfacts.modal";
 export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Output() newProductQueryEvent: EventEmitter<ProductQuery> = new EventEmitter<ProductQuery>();
+  @Output() existingItemEvent: EventEmitter<Item> = new EventEmitter<Item>();
 
   @ViewChild('scanner')
   scanner: ZXingScannerComponent;
@@ -63,12 +66,61 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
   badgeClass: string = '';
   badgeString: string = '';
 
-  constructor(private openFoodFactsService: OpenFoodFactsService) {
+  private items: Item[] = [];
+
+  private blankProduct = {
+    _keywords: [],
+    additives_tags: [],
+    brands: "",
+    brands_tags: [],
+    categories: "",
+    code: "",
+    countries_lc: "",
+    created_t: 0,
+    data_quality_tags: [],
+    id: 0,
+    image_front_url: "",
+    image_ingredients_url: "",
+    image_thumb_url: "",
+    image_url: "",
+    ingredients: [],
+    ingredients_from_palm_oil_n: 0,
+    ingredients_hierarchy: [],
+    ingredients_original_tags: [],
+    ingredients_tags: [],
+    ingredients_text_en: "",
+    ingredients_text_with_allergens: "",
+    ingredients_text_with_allergens_en: "",
+    ingredients_that_may_be_from_palm_oil_tags: [],
+    lang: "",
+    last_modified_t: 0,
+    lc: "",
+    nutriments: undefined,
+    nutrition_data_per: "",
+    nutrition_data_prepared_per: "",
+    popularity_tags: [],
+    product_name: "",
+    product_name_en: "",
+    product_name_fr: "",
+    quantity: "",
+    scans_n: 0,
+    selected_images: undefined,
+    states: "",
+    states_tags: [],
+    unique_scans_n: 0
+  }
+
+  constructor(private itemService: ItemService,
+              private openFoodFactsService: OpenFoodFactsService) {
   }
 
   ngOnInit(): void {
     this.audioCheckoutBleepSrc = isDevMode() ? 'assets/audio/Checkout%20Scanner%20Beep-SoundBible.com-593325210.mp3'
                                              : '/static/ang-src/assets/audio/Checkout%20Scanner%20Beep-SoundBible.com-593325210.mp3';
+    this.itemService.getAllItems().pipe(map(items => {
+      this.items = items;
+      return items;
+    })).subscribe();
   }
 
   ngAfterViewInit(): void {
@@ -114,38 +166,60 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
   scanSuccessHandler(barcodeData: string) {
     this.barcodeResultString = barcodeData;
     this.audioCheckoutBleepPlay();
-    this.badgeClass = 'badge-info';
-    this.badgeString = 'FINDING';
 
-    this.openFoodFactsService.getProduct(barcodeData).pipe(
-      debounce(() => interval(5000)),
-      take(1),
-      map((data: ProductQuery) => {
-        console.log('scanBackendService:', data);
-        if (data.product != undefined) {
-          console.log('[SUCCESS] ', data.product);
-          this.barcodeResultString = data.product.product_name;
-          this.badgeClass = 'badge-success';
-          this.badgeString = 'SUCCESS';
+    // CHECK BARCODE ALREADY EXISTS IN DB
+    let existingItem = this.items.find(x => x.barcode.toString() === barcodeData);
+    if (existingItem) {
 
-          // Emit the data - parent component will close the modal
+      this.existingItemEvent.emit(existingItem);
+
+    } else {
+
+      // CHECK BARCODE ALREADY EXISTS IN OPENFOODFACTS
+      this.badgeClass = 'badge-info';
+      this.badgeString = 'FINDING';
+      this.openFoodFactsService.getProduct(barcodeData).pipe(
+        debounce(() => interval(5000)),
+        take(1),
+        map((data: ProductQuery) => {
+          console.log('scanBackendService:', data);
+          if (data.product != undefined) {
+            console.log('[SUCCESS] ', data.product);
+            this.barcodeResultString = data.product.product_name;
+            this.badgeClass = 'badge-success';
+            this.badgeString = 'SUCCESS';
+          } else {
+            console.warn('[FAILED] ', data.status_verbose);
+            this.barcodeResultString = data.status_verbose;
+            this.badgeClass = 'badge-danger';
+            this.badgeString = 'FAILED';
+            this.emitEmptyProductQuery(barcodeData, data.status_verbose, data.status);
+          }
           this.newProductQueryEvent.emit(data);
+        }),
+        catchError(err => {
+          this.barcodeResultString = `[${err.status}] '${err.statusText}'`;
+          this.badgeClass = 'badge-danger'
+          this.badgeString = 'ERROR'
+          this.emitEmptyProductQuery(barcodeData, err.statusText, err.status);
+          console.error('[ERROR] ', err);
+          return throwError(err);
+        })
+      ).subscribe();
 
-        } else {
-          console.warn('[FAILED] ', data.status_verbose);
-          this.barcodeResultString = data.status_verbose;
-          this.badgeClass = 'badge-danger';
-          this.badgeString = 'FAILED';
-        }
-      }),
-      catchError(err => {
-        this.barcodeResultString = err;
-        this.badgeClass = 'badge-danger'
-        this.badgeString = 'ERROR'
-        console.error('[ERROR] ', err);
-        return throwError(err);
-      })
-    ).subscribe();
+    }
+
+  }
+
+  emitEmptyProductQuery(barcodeData: string, status_verbose: string, status: number) {
+    let data: ProductQuery = {
+      product: this.blankProduct,
+      status_verbose: status_verbose,
+      status: status,
+      code: barcodeData
+    };
+    data.product.code = barcodeData;
+    this.newProductQueryEvent.emit(data);
   }
 
   scanErrorHandler(event) {
