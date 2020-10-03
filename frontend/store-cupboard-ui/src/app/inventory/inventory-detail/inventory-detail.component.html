@@ -56,8 +56,12 @@
             [rowData]="inventoryItems$ | async"
             [columnDefs]="columnDefs"
             [columnTypes]="columnTypes"
+            [groupMultiAutoColumn]="true"
             [pagination]="true"
             [paginationAutoPageSize]="true"
+            [frameworkComponents]="frameworkComponents"
+            [noRowsOverlayComponent]="noRowsOverlayComponent"
+            [noRowsOverlayComponentParams]="noRowsOverlayComponentParams"
             (gridReady)="onGridReady($event.type, $event.api, $event.columnApi)">
           </ag-grid-angular>
 
@@ -93,10 +97,10 @@
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
+    <!-- BARCODE SCAN FOR ITEM IF EXISTS ADD INSTANCE TO GRID; ELSE TAKE TO ADD PRODUCT PAGE; -->
   <div class="modal-body">
-
-
-
+    <app-scan-barcode (existingItemEvent)="onExistingItemEvent($event)"
+                      (newProductQueryEvent)="onNewProductQueryEvent($event)"></app-scan-barcode>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="closeAllDialogModals('Close button click')">Close</button>

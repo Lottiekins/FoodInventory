@@ -1,14 +1,14 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from "@angular/router";
 
 import { Observable } from "rxjs";
+import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 
 import { faBarcode, faCalendarDay } from '@fortawesome/free-solid-svg-icons';
 
 import { ItemService } from "../services/item.service";
 
 import { Item } from "../models/item.model";
-import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 
 
 @Component({

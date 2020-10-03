@@ -23,7 +23,7 @@ export class InventoryService implements OnDestroy {
 
   getInventory(inventoryId: number): Observable<Inventory> {
     const url = `https://192.168.1.13:8000/api/v1/inventory/${inventoryId}`;
-    return timer(1, 5*1000).pipe(
+    return timer(1, 15*1000).pipe(
       switchMap(() => this.http.get<Inventory>(url)),
       retry(),
       map(inventory => inventory[0]),
@@ -34,7 +34,7 @@ export class InventoryService implements OnDestroy {
 
   getAllInventories(): Observable<Inventory[]> {
     const url = `https://192.168.1.13:8000/api/v1/inventories`;
-    return timer(1, 5*1000).pipe(
+    return timer(1, 15*1000).pipe(
       switchMap(() => this.http.get<Inventory[]>(url)),
       retry(),
       share(),

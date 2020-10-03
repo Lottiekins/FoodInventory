@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 
-import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
+import { Observable, of } from "rxjs";
+import { take, tap } from "rxjs/operators";
 
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 import { ColumnApi, GridApi } from "ag-grid-community";
@@ -10,11 +10,16 @@ import * as moment from "moment";
 
 import { faCalendarDay, faHashtag, faCookie, faCookieBite, faBox, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 
+import { ItemService } from "../../item/services/item.service";
 import { InventoryService } from "../services/inventory.service";
 import { InventoryItemService } from "../services/inventory-item.service";
 
+import { Item } from "../../item/models/item.model";
 import { Inventory } from "../models/inventory.model";
 import { InventoryItem } from "../models/inventory-item.model";
+
+import { ProductQuery } from "../../shared/models/openfoodfacts.modal";
+import { InventoryDetailNoRowsOverlayComponent } from "../inventory-detail-no-rows-overlay/inventory-detail-no-rows-overlay.component";
 
 
 @Component({
@@ -33,6 +38,7 @@ export class InventoryDetailComponent implements OnInit {
   public activeModal: NgbModalRef;
 
   public inventoryId: number;
+  public inventory: Inventory;
   public inventory$: Observable<Inventory>;
 
   public inventoryItems$: Observable<InventoryItem[]>;
@@ -42,6 +48,10 @@ export class InventoryDetailComponent implements OnInit {
   public api: GridApi;
   public columnApi: ColumnApi;
 
+  public frameworkComponents;
+  public noRowsOverlayComponent;
+  public noRowsOverlayComponentParams;
+
   public faHashtag = faHashtag;
   public faCalendarDay = faCalendarDay;
   public faCookie = faCookie;
@@ -49,8 +59,12 @@ export class InventoryDetailComponent implements OnInit {
   public faBox = faBox;
   public faBoxOpen = faBoxOpen;
 
-  constructor(private ngbModalService: NgbModal,
+  public overlayNoRowsTemplate: string;
+
+  constructor(private router: Router,
+              private ngbModalService: NgbModal,
               private activatedRoute: ActivatedRoute,
+              private itemService: ItemService,
               private inventoryService: InventoryService,
               private inventoryItemService: InventoryItemService) {
 
@@ -88,6 +102,11 @@ export class InventoryDetailComponent implements OnInit {
         type: ['nonEditableColumn'],
         sortable: true,
         resizable: true,
+        cellRenderer: (params) => {
+          return params.node.data?.inventory__name !== null ?
+            params.node.data?.inventory__name :
+            '-';
+        },
         initialHide: true,
         headerClass: 'bg-dark',
         flex: 2,
@@ -99,9 +118,9 @@ export class InventoryDetailComponent implements OnInit {
         sortable: true,
         resizable: true,
         cellRenderer: (params) => {
-          return params.node.data.purchase_date !== null ?
-            moment(params.node.data.purchase_date, 'YYYYMMDD').fromNow() :
-            '-';
+          return params.node.data?.purchase_date ?
+            moment(params.node.data?.purchase_date, 'YYYYMMDD').fromNow() :
+            '';
         },
         headerClass: 'bg-dark',
         flex: 2,
@@ -113,8 +132,8 @@ export class InventoryDetailComponent implements OnInit {
         sortable: true,
         resizable: true,
         cellRenderer: (params) => {
-          return params.node.data.expiration_date !== null ?
-            moment(params.node.data.expiration_date, 'YYYYMMDD').fromNow() :
+          return params.node.data?.expiration_date ?
+            moment(params.node.data?.expiration_date, 'YYYYMMDD').fromNow() :
             '-';
         },
         initialHide: true,
@@ -128,7 +147,12 @@ export class InventoryDetailComponent implements OnInit {
         sortable: true,
         resizable: true,
         cellRenderer: (params) => {
-          return params.node.data.opened === true ? '✔️' : '❌';
+          switch (params.node.data?.opened) {
+            case undefined: return '';
+            case null: return 'null';
+            case true: return '✔️';
+            case false: return '❌';
+          }
         },
         headerClass: 'bg-dark',
         flex: 1,
@@ -140,19 +164,24 @@ export class InventoryDetailComponent implements OnInit {
         sortable: true,
         resizable: true,
         cellRenderer: (params) => {
-          return params.node.data.opened_date !== null ?
-            moment(params.node.data.opened_date, 'YYYYMMDD').fromNow() :
+          return params.node.data?.opened_date ?
+            moment(params.node.data?.opened_date, 'YYYYMMDD').fromNow() :
             '-';
         },
         headerClass: 'bg-dark',
         flex: 2,
       },
       {
-        field: 'opened_by_id__username',
+        field: 'opened_by__username',
         headerName: 'Opened By',
         type: ['nonEditableColumn'],
         sortable: true,
         resizable: true,
+        cellRenderer: (params) => {
+          return params.node.data?.opened_by_id__username !== null ?
+            params.node.data?.opened_by_id__username :
+            '-';
+        },
         headerClass: 'bg-dark',
         flex: 2,
       },
@@ -163,7 +192,12 @@ export class InventoryDetailComponent implements OnInit {
         sortable: true,
         resizable: true,
         cellRenderer: (params) => {
-          return params.node.data.consumed === true ? '✔️' : '❌';
+          switch (params.node.data?.consumed) {
+            case undefined: return '';
+            case null: return 'null';
+            case true: return '✔️';
+            case false: return '❌';
+          }
         },
         headerClass: 'bg-dark',
         flex: 1,
@@ -175,40 +209,63 @@ export class InventoryDetailComponent implements OnInit {
         sortable: true,
         resizable: true,
         cellRenderer: (params) => {
-          return params.node.data.consumption_date !== null ?
-            moment(params.node.data.consumption_date, 'YYYYMMDD').fromNow() :
+          return params.node.data?.consumption_date ?
+            moment(params.node.data?.consumption_date, 'YYYYMMDD').fromNow() :
             '-';
         },
         headerClass: 'bg-dark',
         flex: 2,
       },
       {
-        field: 'consumed_by_id__username',
+        field: 'consumed_by__username',
         headerName: 'Consumed By',
         type: ['nonEditableColumn'],
         sortable: true,
         resizable: true,
+        cellRenderer: (params) => {
+          return params.node.data?.consumed_by_id__username !== null ?
+            params.node.data?.consumed_by_id__username :
+            '-';
+        },
         headerClass: 'bg-dark',
         flex: 2,
       },
     ];
 
+    this.frameworkComponents = {
+      customLoadingOverlay: InventoryDetailNoRowsOverlayComponent,
+      customNoRowsOverlay: InventoryDetailNoRowsOverlayComponent,
+    };
+
     this.columnTypes = {
       nonEditableColumn: { editable: false },
     }
 
+    this.noRowsOverlayComponent = 'customNoRowsOverlay';
+    this.noRowsOverlayComponentParams = {
+      inventoryId: this.inventoryId
+    };
+    this.inventoryItemService.openAddInventoryItemModal$.subscribe(() => {
+      this.activeModal = this.ngbModalService.open(this.addItemToInventoryModal, {backdrop: 'static'});
+    });
+
   }
 
   ngOnInit(): void {
-    this.inventory$ = this.inventoryService.getInventory(this.inventoryId);
+    this.inventory$ = this.inventoryService.getInventory(this.inventoryId).pipe(tap(inventory => {
+      this.inventory = inventory;
+    }));
     this.inventoryItems$ = this.inventoryItemService.getAllInventoryItems(this.inventoryId)
       .pipe(tap(inventoryItems => {
         inventoryItems.forEach(inventoryItem => {
+          this.columnApi.setColumnVisible('purchase_date', inventoryItem.purchase_date !== null);
           this.columnApi.setColumnVisible('expiration_date', inventoryItem.expiration_date !== null);
+          this.columnApi.setColumnVisible('opened', inventoryItem.opened);
           this.columnApi.setColumnVisible('opened_date', inventoryItem.opened);
-          this.columnApi.setColumnVisible('opened_by_id__username', inventoryItem.opened);
+          this.columnApi.setColumnVisible('opened_by__username', inventoryItem.opened);
+          this.columnApi.setColumnVisible('consumed', inventoryItem.consumed);
           this.columnApi.setColumnVisible('consumption_date', inventoryItem.consumed);
-          this.columnApi.setColumnVisible('consumed_by_id__username', inventoryItem.consumed);
+          this.columnApi.setColumnVisible('consumed_by__username', inventoryItem.consumed);
         });
       }
     ));
@@ -251,7 +308,25 @@ export class InventoryDetailComponent implements OnInit {
   }
 
   onAddItemToInventoryClicked() {
-    this.activeModal = this.ngbModalService.open(this.addItemToInventoryModal, {backdrop: 'static'});
+    this.inventoryItemService.triggerOpenAddInventoryItemModal();
+  }
+
+  onExistingItemEvent(item: Item) {
+    this.closeAllDialogModals('Existing Item Event');
+    const csrftoken = localStorage.getItem('csrf_token');
+    this.inventoryItemService.addInventoryItem(this.inventoryId, item.id, csrftoken).subscribe();
+    this.inventoryItemService.getAllInventoryItems(this.inventoryId).pipe(take(1), tap(data => {
+      this.inventoryItems$ = of(data);
+    })).subscribe();
+  }
+
+  onNewProductQueryEvent(productQuery: ProductQuery) {
+    this.closeAllDialogModals('New Product Query Event');
+    this.router.navigate(['/item']).then(() => {
+      setTimeout(() => {
+        this.itemService.openAddItemModal$.next(productQuery);
+      },  500);
+    });
   }
 
 }

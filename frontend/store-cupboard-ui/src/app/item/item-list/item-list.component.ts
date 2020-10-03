@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormBuilder, FormArray } from '@angular/forms';
+import { Router } from "@angular/router";
 
 import { Observable } from "rxjs";
 import { map, take } from "rxjs/operators";
@@ -14,7 +15,6 @@ import { WikipediaApiService } from "../../shared/services/wikipedia-api.service
 import { ProductQuery } from "../../shared/models/openfoodfacts.modal";
 import { Item, ItemAdded, WeightFormatChoicesEnum, WeightFormatEnum } from "../models/item.model";
 import { Alert } from "../../shared/models/alert.model";
-import {Router} from "@angular/router";
 
 
 @Component({
@@ -80,6 +80,9 @@ export class ItemListComponent implements OnInit {
 
   ngOnInit(): void {
     this.items$ = this.itemService.getAllItems();
+    this.itemService.openAddItemModal$.subscribe(productQuery => {
+      this.openAddItemDialogModal(productQuery);
+    });
   }
 
   openScanningModal() {
@@ -136,10 +139,10 @@ export class ItemListComponent implements OnInit {
     this.addItemForm = this.formBuilder.group({
       barcode: productQuery.product.code,
       manufacturer: '',
-      brands: productQuery.product.brands,
-      name: productQuery.product.product_name,
-      image: productQuery.product.selected_images?.front ?
-          productQuery.product.selected_images.front.display[productQuery.product.lc] :
+      brands: productQuery?.product?.brands ? productQuery?.product?.brands : '',
+      name: productQuery?.product?.product_name ? productQuery?.product?.product_name : '',
+      image: productQuery?.product?.selected_images?.front ?
+          productQuery?.product?.selected_images?.front.display[productQuery?.product?.lc] :
           'https://via.placeholder.com/150?text=No+Product+Image',
       total_weight: 0,
       total_weight_format: WeightFormatEnum.GRAM,

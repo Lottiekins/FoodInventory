@@ -9,10 +9,10 @@ export interface InventoryItem {
   expiration_date: Date;
   opened: boolean;
   opened_date: Date;
-  opened_by_id: CustomUser;
+  opened_by: CustomUser;
   consumed: boolean;
   consumption_date: Date;
-  consumed_by_id: CustomUser;
+  consumed_by: CustomUser;
   created_on?: Date;
   modified_on?: Date;
 }
