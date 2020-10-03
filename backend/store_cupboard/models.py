@@ -120,16 +120,16 @@ class Item(models.Model):
 class InventoryItem(models.Model):
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name='inventory')
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='item')
-    purchase_date = models.DateTimeField(default=timezone.now)
+    purchase_date = models.DateTimeField(default=None, blank=True, null=True)
     expiration_date = models.DateTimeField(default=None, blank=True, null=True)
     opened = models.BooleanField(default=False, blank=True)
     opened_date = models.DateTimeField(default=None, blank=True, null=True)
-    opened_by_id = models.ForeignKey(CustomUser, related_name='opened_by_custom_user',
-                                     on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
+    opened_by = models.ForeignKey(CustomUser, related_name='opened_by_custom_user',
+                                  on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
     consumed = models.BooleanField(default=False, blank=True)
     consumption_date = models.DateTimeField(default=None, blank=True, null=True)
-    consumed_by_id = models.ForeignKey(CustomUser, related_name='consumed_by_custom_user',
-                                       on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
+    consumed_by = models.ForeignKey(CustomUser, related_name='consumed_by_custom_user',
+                                    on_delete=models.SET_DEFAULT, default=None, blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
 
@@ -140,7 +140,7 @@ class InventoryItem(models.Model):
     def __str__(self):
         return self.item.name
 
-    def to_json(self, opened_by_id__username, consumed_by_id__username):
+    def to_json(self):
         return json.dumps({
             'inventory_item__id': self.id,
             'inventory_item__inventory_id': self.inventory.id,
@@ -150,11 +150,11 @@ class InventoryItem(models.Model):
             'inventory_item__opened': self.opened,
             'inventory_item__opened_date': self.opened_date,
             'inventory_item__opened_by_id': self.opened_by_id,
-            'opened_by_id__username': opened_by_id__username,
+            'opened_by_id__username': 'opened_username',
             'inventory_item__consumed': self.consumed,
             'inventory_item__consumption_date': self.consumption_date,
             'inventory_item__consumed_by_id': self.consumed_by_id,
-            'consumed_by_id__username': consumed_by_id__username,
+            'consumed_by_id__username': 'consumed_username',
             'inventory_item__created_on': self.created_on,
             'inventory_item__modified_on': self.modified_on,
             'inventory__id': self.inventory.id,

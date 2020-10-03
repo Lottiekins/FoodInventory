@@ -214,13 +214,15 @@ def get_all_inventory_items(request, inventory_id: int):
     response = json.dumps({})
     if request.method == 'GET':
         try:
-            inventory_items = InventoryItem.objects.select_related('inventory', 'item',
-                                                                   'opened_by_custom_user', 'consumed_by_custom_user')\
+            inventory_items = InventoryItem.objects.select_related('inventory',
+                                                                   'item',
+                                                                   'opened_by_custom_user',
+                                                                   'consumed_by_custom_user')\
                 .filter(inventory=inventory_id)\
                 .values('id', 'item__name', 'item__image',
                         'inventory_id', 'inventory__name', 'purchase_date', 'expiration_date',
-                        'opened', 'opened_date', 'opened_by_id__username',
-                        'consumed', 'consumption_date', 'consumed_by_id__username')
+                        'opened', 'opened_date', 'opened_by__username',
+                        'consumed', 'consumption_date', 'consumed_by__username')
 
             response = list(inventory_items)
             # print('response:', response)
@@ -234,11 +236,21 @@ def get_all_inventory_items(request, inventory_id: int):
 
 
 @csrf_exempt
-def add_inventory_item(request):
+def add_inventory_item(request, inventory_id: int):
     response = json.dumps({})
     if request.method == 'POST':
-        inventory_item = json.loads(request.body)
-        response = inventory_item
+        item_id: int = json.loads(request.body)
+        inventory = Inventory.objects.get(id=inventory_id)
+        item = Item.objects.get(id=item_id)
+        inventory_item = InventoryItem.objects\
+            .select_related('inventory', 'item')\
+            .create(inventory=inventory,
+                    item=item)
+        response = inventory_item.to_json()
+        return HttpResponse(json.dumps(response,
+                                       sort_keys=True,
+                                       indent=1,
+                                       cls=DjangoJSONEncoder), content_type="application/json")
     return HttpResponse(response, content_type="application/json")
 
 
