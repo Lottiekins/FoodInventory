@@ -131,7 +131,7 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.barcodeResultString = barcodeData;
         this.audioCheckoutBleepPlay();
         // CHECK BARCODE ALREADY EXISTS IN DB
-        let existingItem = this.items.find(x => x.barcode.toString() === barcodeData);
+        let existingItem = this.items.find(x => x.barcode === parseInt(barcodeData));
         if (existingItem) {
           // BARCODE ALREADY EXISTS IN ITEMS/PRODUCTS LIST
           this.existingItemEvent.emit(existingItem);
