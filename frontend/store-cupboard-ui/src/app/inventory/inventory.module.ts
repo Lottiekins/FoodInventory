@@ -14,13 +14,15 @@ import { InventoryRoutingModule } from "./inventory-routing.module";
 import { InventoryListComponent } from './inventory-list/inventory-list.component';
 import { InventoryDetailComponent } from './inventory-detail/inventory-detail.component';
 import { InventoryDetailNoRowsOverlayComponent } from './inventory-detail-no-rows-overlay/inventory-detail-no-rows-overlay.component';
+import { InventoryDetailBtnCellRendererComponent } from './inventory-detail-btn-cell-renderer/inventory-detail-btn-cell-renderer.component';
 
 
 @NgModule({
   declarations: [
     InventoryListComponent,
     InventoryDetailComponent,
-    InventoryDetailNoRowsOverlayComponent
+    InventoryDetailNoRowsOverlayComponent,
+    InventoryDetailBtnCellRendererComponent
   ],
   imports: [
     CommonModule,

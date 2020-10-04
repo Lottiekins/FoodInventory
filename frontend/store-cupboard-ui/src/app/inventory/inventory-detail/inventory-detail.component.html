@@ -51,18 +51,29 @@
           </div>
 
           <ag-grid-angular
-            style="width: 100%; height: 55vh; font-size: 11px;"
+            style="width: 100%; height: 55vh; font-size: 12px;"
             class="ag-theme-balham-dark"
-            [rowData]="inventoryItems$ | async"
-            [columnDefs]="columnDefs"
-            [columnTypes]="columnTypes"
-            [groupMultiAutoColumn]="true"
+            [rowData]="(inventoryItems$ | async)"
+            [rowHeight]="50"
             [pagination]="true"
             [paginationAutoPageSize]="true"
+            [enableCellChangeFlash]="true"
+            [suppressPropertyNamesCheck]="true"
             [frameworkComponents]="frameworkComponents"
+            [autoGroupColumnDef]="{ field: 'item__name' }"
             [noRowsOverlayComponent]="noRowsOverlayComponent"
             [noRowsOverlayComponentParams]="noRowsOverlayComponentParams"
-            (gridReady)="onGridReady($event.type, $event.api, $event.columnApi)">
+            (gridReady)="onGridReady($event.type, $event.api, $event.columnApi)"
+            (columnResized)="onColumnResized()">
+            <ag-grid-column [headerName]="'Item'" [headerClass]="'bg-dark'" [field]="'item__name'" [hide]="true"
+                            [rowGroup]="true" [sortable]="true" [resizable]="true" [wrapText]="true"
+                            [onCellClicked]=""></ag-grid-column>
+            <ag-grid-column [headerName]="'Open'" [width]="80"
+                            [cellRenderer]="'customBtnRenderer'"
+                            [cellRendererParams]="{ btnName: 'Open', btnSize: 'btn-sm', btnType: 'btn-primary' }"></ag-grid-column>
+            <ag-grid-column [headerName]="'Eat'" [width]="70"
+                            [cellRenderer]="'customBtnRenderer'"
+                            [cellRendererParams]="{ btnName: 'Eat', btnSize: 'btn-sm', btnType: 'btn-danger' }"></ag-grid-column>
           </ag-grid-angular>
 
         </div>

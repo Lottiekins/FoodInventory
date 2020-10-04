@@ -2,11 +2,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from "@angular/router";
 
 import { Observable, of } from "rxjs";
-import { take, tap } from "rxjs/operators";
+import {filter, map, take, tap} from "rxjs/operators";
 
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 import { ColumnApi, GridApi } from "ag-grid-community";
-import * as moment from "moment";
 
 import { faCalendarDay, faHashtag, faCookie, faCookieBite, faBox, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 
@@ -20,6 +19,7 @@ import { InventoryItem } from "../models/inventory-item.model";
 
 import { ProductQuery } from "../../shared/models/openfoodfacts.modal";
 import { InventoryDetailNoRowsOverlayComponent } from "../inventory-detail-no-rows-overlay/inventory-detail-no-rows-overlay.component";
+import {InventoryDetailBtnCellRendererComponent} from "../inventory-detail-btn-cell-renderer/inventory-detail-btn-cell-renderer.component";
 
 
 @Component({
@@ -72,179 +72,20 @@ export class InventoryDetailComponent implements OnInit {
       this.inventoryId = params['id'];
     });
 
-    this.columnDefs = [
-      {
-        field: 'item__name',
-        headerName: 'Item',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        headerClass: ['bg-dark'],
-        headerComponentParams: {
-          template:
-            '<div class="ag-cell-label-container" role="presentation">'+
-            '    <span ref="eMenu" class="ag-header-icon ag-header-cell-menu-button"></span>'+
-            '    <div ref="eLabel" class="ag-header-cell-label" role="presentation">'+
-            '        <span ref="eText" class="ag-header-cell-text" role="columnheader"></span>'+
-            '        <span ref="eFilter" class="ag-header-icon ag-filter-icon"></span>'+
-            '        <span ref="eSortOrder" class="ag-header-icon ag-sort-order"></span>'+
-            '        <span ref="eSortAsc" class="ag-header-icon ag-sort-ascending-icon"></span>'+
-            '        <span ref="eSortDesc" class="ag-header-icon ag-sort-descending-icon"></span>'+
-            '        <span ref="eSortNone" class="ag-header-icon ag-sort-none-icon"></span>'+
-            '    </div>'+
-            '</div>'
-        },
-        flex: 3,
-      },
-      {
-        field: 'inventory__name',
-        headerName: 'Inventory',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.inventory__name !== null ?
-            params.node.data?.inventory__name :
-            '-';
-        },
-        initialHide: true,
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-      {
-        field: 'purchase_date',
-        headerName: 'Purchase Date',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.purchase_date ?
-            moment(params.node.data?.purchase_date, 'YYYYMMDD').fromNow() :
-            '';
-        },
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-      {
-        field: 'expiration_date',
-        headerName: 'Expiration Date',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.expiration_date ?
-            moment(params.node.data?.expiration_date, 'YYYYMMDD').fromNow() :
-            '-';
-        },
-        initialHide: true,
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-      {
-        field: 'opened',
-        headerName: 'Opened',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          switch (params.node.data?.opened) {
-            case undefined: return '';
-            case null: return 'null';
-            case true: return '✔️';
-            case false: return '❌';
-          }
-        },
-        headerClass: 'bg-dark',
-        flex: 1,
-      },
-      {
-        field: 'opened_date',
-        headerName: 'Opened Date',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.opened_date ?
-            moment(params.node.data?.opened_date, 'YYYYMMDD').fromNow() :
-            '-';
-        },
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-      {
-        field: 'opened_by__username',
-        headerName: 'Opened By',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.opened_by_id__username !== null ?
-            params.node.data?.opened_by_id__username :
-            '-';
-        },
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-      {
-        field: 'consumed',
-        headerName: 'Consumed',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          switch (params.node.data?.consumed) {
-            case undefined: return '';
-            case null: return 'null';
-            case true: return '✔️';
-            case false: return '❌';
-          }
-        },
-        headerClass: 'bg-dark',
-        flex: 1,
-      },
-      {
-        field: 'consumption_date',
-        headerName: 'Consumption Date',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.consumption_date ?
-            moment(params.node.data?.consumption_date, 'YYYYMMDD').fromNow() :
-            '-';
-        },
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-      {
-        field: 'consumed_by__username',
-        headerName: 'Consumed By',
-        type: ['nonEditableColumn'],
-        sortable: true,
-        resizable: true,
-        cellRenderer: (params) => {
-          return params.node.data?.consumed_by_id__username !== null ?
-            params.node.data?.consumed_by_id__username :
-            '-';
-        },
-        headerClass: 'bg-dark',
-        flex: 2,
-      },
-    ];
-
     this.frameworkComponents = {
       customLoadingOverlay: InventoryDetailNoRowsOverlayComponent,
       customNoRowsOverlay: InventoryDetailNoRowsOverlayComponent,
+      customBtnRenderer: InventoryDetailBtnCellRendererComponent,
     };
+    this.noRowsOverlayComponent = 'customNoRowsOverlay';
+    this.noRowsOverlayComponentParams = { inventoryId: this.inventoryId };
+
+    this.columnDefs = [];
 
     this.columnTypes = {
       nonEditableColumn: { editable: false },
     }
 
-    this.noRowsOverlayComponent = 'customNoRowsOverlay';
-    this.noRowsOverlayComponentParams = {
-      inventoryId: this.inventoryId
-    };
     this.inventoryItemService.openAddInventoryItemModal$.subscribe(() => {
       this.activeModal = this.ngbModalService.open(this.addItemToInventoryModal, {backdrop: 'static'});
     });
@@ -255,26 +96,20 @@ export class InventoryDetailComponent implements OnInit {
     this.inventory$ = this.inventoryService.getInventory(this.inventoryId).pipe(tap(inventory => {
       this.inventory = inventory;
     }));
-    this.inventoryItems$ = this.inventoryItemService.getAllInventoryItems(this.inventoryId)
-      .pipe(tap(inventoryItems => {
-        inventoryItems.forEach(inventoryItem => {
-          this.columnApi.setColumnVisible('purchase_date', inventoryItem.purchase_date !== null);
-          this.columnApi.setColumnVisible('expiration_date', inventoryItem.expiration_date !== null);
-          this.columnApi.setColumnVisible('opened', inventoryItem.opened);
-          this.columnApi.setColumnVisible('opened_date', inventoryItem.opened);
-          this.columnApi.setColumnVisible('opened_by__username', inventoryItem.opened);
-          this.columnApi.setColumnVisible('consumed', inventoryItem.consumed);
-          this.columnApi.setColumnVisible('consumption_date', inventoryItem.consumed);
-          this.columnApi.setColumnVisible('consumed_by__username', inventoryItem.consumed);
-        });
-      }
-    ));
+    this.inventoryItems$ = this.inventoryItemService.getAllInventoryItems(this.inventoryId).pipe(
+      map(x => x.filter(y => !y.consumed))
+    );
   }
 
   onGridReady(type: string, api: GridApi, columnApi: ColumnApi) {
     // console.log('type', type, '; api', api, '; columnApi', columnApi);
     this.api = api;
     this.columnApi = columnApi;
+    this.api.sizeColumnsToFit();
+  }
+
+  onColumnResized() {
+    this.api.sizeColumnsToFit();
   }
 
   myDateComparator(filterLocalDateAtMidnight, cellValue) {

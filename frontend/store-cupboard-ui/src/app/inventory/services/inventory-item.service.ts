@@ -49,14 +49,20 @@ export class InventoryItemService implements OnDestroy {
     return this.http.post<InventoryItemAdded>(url, itemId, {headers});
   }
 
-  updateInventoryItem(inventoryId: number, id: number, inventoryItem: InventoryItem, csrftoken: string): Observable<boolean> {
-    const url = `https://192.168.1.13:8000/api/v1/inventory/${inventoryId}/item/update/${id}`;
+  updateInventoryItemOpened(inventoryId: number, id: number, inventoryItem: InventoryItem, csrftoken: string): Observable<boolean> {
+    const url = `https://192.168.1.13:8000/api/v1/inventory/${inventoryId}/item/update/${id}/opened`;
     const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : ''});
     return this.http.post<boolean>(url, inventoryItem, {headers});
   }
 
-  deleteInventoryItem(inventoryId: number, id: number, csrftoken: string): Observable<boolean> {
-    const url = `https://192.168.1.13:8000/api/v1/inventory/${inventoryId}/item/delete/${id}`;
+  updateInventoryItemConsumed(inventoryId: number, id: number, inventoryItem: InventoryItem, csrftoken: string): Observable<boolean> {
+    const url = `https://192.168.1.13:8000/api/v1/inventory/${inventoryId}/item/update/${id}/consumed`;
+    const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : ''});
+    return this.http.post<boolean>(url, inventoryItem, {headers});
+  }
+
+  deleteInventoryItem(inventoryId: number, inventoryItemId: number, csrftoken: string): Observable<boolean> {
+    const url = `https://192.168.1.13:8000/api/v1/inventory/${inventoryId}/item/delete/${inventoryItemId}`;
     const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : ''});
     return this.http.delete<boolean>(url, {headers});
   }
