@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from requests import Timeout
 from requests.utils import requote_uri
@@ -255,12 +256,27 @@ def add_inventory_item(request, inventory_id: int):
 
 
 @csrf_exempt
-def update_inventory_item(request, inventory_item_id: int):
+def update_inventory_item_opened(request, inventory_id: int, inventory_item_id: int):
     if request.method == 'POST':
         new_inventory_item = json.loads(request.body)
         inventory_item = InventoryItem.objects.filter(id=inventory_item_id)
         if inventory_item:
-            inventory_item.update(new_inventory_item)
+            inventory_item.update(opened=new_inventory_item['opened'],
+                                  opened_date=timezone.now())
+            response = bool(inventory_item)
+            print('inventory_item updated:', bool(inventory_item))
+            return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+@csrf_exempt
+def update_inventory_item_consumed(request, inventory_id: int, inventory_item_id: int):
+    if request.method == 'POST':
+        new_inventory_item = json.loads(request.body)
+        inventory_item = InventoryItem.objects.filter(id=inventory_item_id)
+        if inventory_item:
+            inventory_item.update(consumed=new_inventory_item['consumed'],
+                                  consumption_date=timezone.now())
             response = bool(inventory_item)
             print('inventory_item updated:', bool(inventory_item))
             return HttpResponse(json.dumps(response), content_type="application/json")
