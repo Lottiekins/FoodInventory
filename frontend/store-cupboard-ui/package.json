@@ -29,6 +29,7 @@
     "@zxing/ngx-scanner": "^3.0.1",
     "ag-grid-angular": "^24.0.0",
     "ag-grid-community": "^24.0.0",
+    "ag-grid-enterprise": "^24.0.0",
     "bootstrap": "^4.5.2",
     "bootswatch": "^4.5.2",
     "moment": "^2.29.0",

@@ -5,6 +5,7 @@ import { Observable, Subject, timer } from "rxjs";
 import {map, retry, share, switchMap, takeUntil} from "rxjs/operators";
 
 import { Item, ItemAdded } from "../models/item.model";
+import { ProductQuery } from "../../shared/models/openfoodfacts.modal";
 
 
 @Injectable({
@@ -12,6 +13,7 @@ import { Item, ItemAdded } from "../models/item.model";
 })
 export class ItemService implements OnDestroy {
 
+  public openAddItemModal$ = new Subject<ProductQuery>();
   private stopPolling = new Subject();
 
   constructor(private http: HttpClient) {
@@ -23,7 +25,7 @@ export class ItemService implements OnDestroy {
 
   getItem(itemId: number): Observable<Item> {
     const url = `https://192.168.1.13:8000/api/v1/item/${itemId}`;
-    return timer(1, 5*1000).pipe(
+    return timer(1, 15*1000).pipe(
       switchMap(() => this.http.get<Item>(url)),
       retry(),
       map(item => item[0]),
@@ -34,7 +36,7 @@ export class ItemService implements OnDestroy {
 
   getAllItems(): Observable<Item[]> {
     const url = `https://192.168.1.13:8000/api/v1/items`;
-    return timer(1, 5*1000).pipe(
+    return timer(1, 15*1000).pipe(
       switchMap(() => this.http.get<Item[]>(url)),
       retry(),
       share(),
@@ -58,6 +60,10 @@ export class ItemService implements OnDestroy {
     const url = `https://192.168.1.13:8000/api/v1/item/del/${id}`;
     const headers: HttpHeaders = new HttpHeaders({'X-CSRFToken': csrftoken != null ? csrftoken : '' });
     return this.http.delete<boolean>(url, {headers});
+  }
+
+  triggerOpenAddItemModal() {
+    this.openAddItemModal$.next();
   }
 
 }

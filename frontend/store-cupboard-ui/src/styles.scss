@@ -21,6 +21,12 @@ router-outlet + * {
 .tooltip-danger .tooltip-inner {
   background-color: #e74c3c;
 }
+
 .tooltip-danger .arrow::before {
   border-color: #e74c3c;
+}
+
+.ag-row-group-leaf-indent {
+  padding-left: 0!important;
+  margin-left: 0!important;
 }

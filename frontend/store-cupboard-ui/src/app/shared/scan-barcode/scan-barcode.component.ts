@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy,
          Output, ViewChild, ElementRef, EventEmitter, isDevMode } from '@angular/core';
-import { interval, Observable, of, throwError } from 'rxjs';
-import { catchError, debounce, map, take } from "rxjs/operators";
+import { Observable, of, Subject, throwError } from 'rxjs';
+import { catchError, map, take, tap, throttleTime } from "rxjs/operators";
 
 import { BarcodeFormat } from '@zxing/library';
 import { ZXingScannerComponent } from "@zxing/ngx-scanner";
@@ -28,6 +28,8 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('scanner')
   scanner: ZXingScannerComponent;
+
+  scanSuccess$: Subject<string> = new Subject<string>();
 
   @ViewChild('audioCheckoutBleep')
   audioPlayerRef: ElementRef;
@@ -121,6 +123,56 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.items = items;
       return items;
     })).subscribe();
+
+    this.scanSuccess$.pipe(
+      throttleTime(5000),
+      take(1),
+      map(barcodeData => {
+        this.barcodeResultString = barcodeData;
+        this.audioCheckoutBleepPlay();
+        // CHECK BARCODE ALREADY EXISTS IN DB
+        let existingItem = this.items.find(x => x.barcode === parseInt(barcodeData));
+        if (existingItem) {
+          // BARCODE ALREADY EXISTS IN ITEMS/PRODUCTS LIST
+          this.existingItemEvent.emit(existingItem);
+        } else {
+          // CHECK BARCODE ALREADY EXISTS IN OPENFOODFACTS
+          this.badgeClass = 'badge-info';
+          this.badgeString = 'FINDING';
+          this.openFoodFactsService.getProduct(barcodeData).pipe(
+            take(1),
+            map((data: ProductQuery) => {
+              if (data.product != undefined) {
+                this.barcodeResultString = data.product.product_name;
+                this.badgeClass = 'badge-success';
+                this.badgeString = 'SUCCESS';
+              } else {
+                console.warn('[FAILED] ', data.status_verbose);
+                this.barcodeResultString = data.status_verbose;
+                this.badgeClass = 'badge-danger';
+                this.badgeString = 'FAILED';
+              }
+              if (this.badgeString === 'SUCCESS') {
+                // PRODUCT ALREADY EXISTS IN OPENFOODFACTS
+                this.newProductQueryEvent.emit(data);
+              } else {
+                // NO PRODUCT FOUND IN OPENFOODFACTS
+                this.emitEmptyProductQuery(barcodeData, data.status_verbose, data.status);
+              }
+            }),
+            catchError(err => {
+              // OPENFOODFACTS BROKE
+              this.barcodeResultString = `[${err.status}] '${err.statusText}'`;
+              this.badgeClass = 'badge-danger'
+              this.badgeString = 'ERROR'
+              this.emitEmptyProductQuery(barcodeData, err.statusText, err.status);
+              console.error('[ERROR] ', err);
+              return throwError(err);
+            })
+          ).subscribe();
+        }
+    })).subscribe();
+
   }
 
   ngAfterViewInit(): void {
@@ -163,52 +215,9 @@ export class ScanBarcodeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.torchEnabled = !this.torchEnabled;
   }
 
-  scanSuccessHandler(barcodeData: string) {
-    this.barcodeResultString = barcodeData;
-    this.audioCheckoutBleepPlay();
-
-    // CHECK BARCODE ALREADY EXISTS IN DB
-    let existingItem = this.items.find(x => x.barcode.toString() === barcodeData);
-    if (existingItem) {
-
-      this.existingItemEvent.emit(existingItem);
-
-    } else {
-
-      // CHECK BARCODE ALREADY EXISTS IN OPENFOODFACTS
-      this.badgeClass = 'badge-info';
-      this.badgeString = 'FINDING';
-      this.openFoodFactsService.getProduct(barcodeData).pipe(
-        debounce(() => interval(5000)),
-        take(1),
-        map((data: ProductQuery) => {
-          console.log('scanBackendService:', data);
-          if (data.product != undefined) {
-            console.log('[SUCCESS] ', data.product);
-            this.barcodeResultString = data.product.product_name;
-            this.badgeClass = 'badge-success';
-            this.badgeString = 'SUCCESS';
-          } else {
-            console.warn('[FAILED] ', data.status_verbose);
-            this.barcodeResultString = data.status_verbose;
-            this.badgeClass = 'badge-danger';
-            this.badgeString = 'FAILED';
-            this.emitEmptyProductQuery(barcodeData, data.status_verbose, data.status);
-          }
-          this.newProductQueryEvent.emit(data);
-        }),
-        catchError(err => {
-          this.barcodeResultString = `[${err.status}] '${err.statusText}'`;
-          this.badgeClass = 'badge-danger'
-          this.badgeString = 'ERROR'
-          this.emitEmptyProductQuery(barcodeData, err.statusText, err.status);
-          console.error('[ERROR] ', err);
-          return throwError(err);
-        })
-      ).subscribe();
-
-    }
-
+  scanSuccessHandler(scanSuccessEvent: string) {
+    console.log('scanSuccessHandler: ', scanSuccessEvent);
+    this.scanSuccess$.next(scanSuccessEvent);
   }
 
   emitEmptyProductQuery(barcodeData: string, status_verbose: string, status: number) {

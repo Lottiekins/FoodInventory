@@ -18,19 +18,22 @@ import { ItemDetailComponent } from './item-detail/item-detail.component';
 
 
 @NgModule({
-  declarations: [ItemListComponent, ScanBarcodeComponent, ItemDetailComponent],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule,
-    ItemRoutingModule,
-    FontAwesomeModule,
-    NgbAlertModule,
-    FormsModule,
-    NgbTooltipModule,
-    ZXingScannerModule,
-    SharedModule,
-    NgxBarcodeModule
-  ]
+    declarations: [ItemListComponent, ScanBarcodeComponent, ItemDetailComponent],
+    exports: [
+        ScanBarcodeComponent
+    ],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterModule,
+        ItemRoutingModule,
+        FontAwesomeModule,
+        NgbAlertModule,
+        FormsModule,
+        NgbTooltipModule,
+        ZXingScannerModule,
+        SharedModule,
+        NgxBarcodeModule
+    ]
 })
 export class ItemModule { }

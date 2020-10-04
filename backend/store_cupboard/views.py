@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from requests import Timeout
 from requests.utils import requote_uri
@@ -214,13 +215,15 @@ def get_all_inventory_items(request, inventory_id: int):
     response = json.dumps({})
     if request.method == 'GET':
         try:
-            inventory_items = InventoryItem.objects.select_related('inventory', 'item',
-                                                                   'opened_by_custom_user', 'consumed_by_custom_user')\
+            inventory_items = InventoryItem.objects.select_related('inventory',
+                                                                   'item',
+                                                                   'opened_by_custom_user',
+                                                                   'consumed_by_custom_user')\
                 .filter(inventory=inventory_id)\
                 .values('id', 'item__name', 'item__image',
                         'inventory_id', 'inventory__name', 'purchase_date', 'expiration_date',
-                        'opened', 'opened_date', 'opened_by_id__username',
-                        'consumed', 'consumption_date', 'consumed_by_id__username')
+                        'opened', 'opened_date', 'opened_by__username',
+                        'consumed', 'consumption_date', 'consumed_by__username')
 
             response = list(inventory_items)
             # print('response:', response)
@@ -234,21 +237,46 @@ def get_all_inventory_items(request, inventory_id: int):
 
 
 @csrf_exempt
-def add_inventory_item(request):
+def add_inventory_item(request, inventory_id: int):
     response = json.dumps({})
     if request.method == 'POST':
-        inventory_item = json.loads(request.body)
-        response = inventory_item
+        item_id: int = json.loads(request.body)
+        inventory = Inventory.objects.get(id=inventory_id)
+        item = Item.objects.get(id=item_id)
+        inventory_item = InventoryItem.objects\
+            .select_related('inventory', 'item')\
+            .create(inventory=inventory,
+                    item=item)
+        response = inventory_item.to_json()
+        return HttpResponse(json.dumps(response,
+                                       sort_keys=True,
+                                       indent=1,
+                                       cls=DjangoJSONEncoder), content_type="application/json")
     return HttpResponse(response, content_type="application/json")
 
 
 @csrf_exempt
-def update_inventory_item(request, inventory_item_id: int):
+def update_inventory_item_opened(request, inventory_id: int, inventory_item_id: int):
     if request.method == 'POST':
         new_inventory_item = json.loads(request.body)
         inventory_item = InventoryItem.objects.filter(id=inventory_item_id)
         if inventory_item:
-            inventory_item.update(new_inventory_item)
+            inventory_item.update(opened=new_inventory_item['opened'],
+                                  opened_date=timezone.now())
+            response = bool(inventory_item)
+            print('inventory_item updated:', bool(inventory_item))
+            return HttpResponse(json.dumps(response), content_type="application/json")
+    return HttpResponse(False, content_type="application/json")
+
+
+@csrf_exempt
+def update_inventory_item_consumed(request, inventory_id: int, inventory_item_id: int):
+    if request.method == 'POST':
+        new_inventory_item = json.loads(request.body)
+        inventory_item = InventoryItem.objects.filter(id=inventory_item_id)
+        if inventory_item:
+            inventory_item.update(consumed=new_inventory_item['consumed'],
+                                  consumption_date=timezone.now())
             response = bool(inventory_item)
             print('inventory_item updated:', bool(inventory_item))
             return HttpResponse(json.dumps(response), content_type="application/json")

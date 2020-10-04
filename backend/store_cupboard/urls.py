@@ -21,7 +21,8 @@ urlpatterns = [
     path('inventory/<int:inventory_id>/items', views.get_all_inventory_items),
     path('inventory/<int:inventory_id>/item/<int:inventory_item_id>', views.get_inventory_item),
     path('inventory/<int:inventory_id>/item/add', views.add_inventory_item),
-    path('inventory/<int:inventory_id>/item/update/<int:inventory_item_id>', views.update_inventory_item),
+    path('inventory/<int:inventory_id>/item/update/<int:inventory_item_id>/opened', views.update_inventory_item_opened),
+    path('inventory/<int:inventory_id>/item/update/<int:inventory_item_id>/consumed', views.update_inventory_item_consumed),
     path('inventory/<int:inventory_id>/item/delete/<int:inventory_item_id>', views.delete_inventory_item),
 
     # OpenFoodFacts

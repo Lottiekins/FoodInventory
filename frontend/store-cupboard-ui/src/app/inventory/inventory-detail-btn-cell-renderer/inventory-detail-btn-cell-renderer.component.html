@@ -1,0 +1,9 @@
+<div class="d-flex align-items-center h-100" style="pointer-events: auto;" *ngIf="paramsData">
+  <button class="btn" [ngClass]="btnClasses" [disabled]="disableButton"
+          (click)="onBtnClicked(paramsData)">
+    <fa-icon [icon]="faSpinner" [spin]="true" *ngIf="loadingButton; else showName;"></fa-icon>
+    <ng-template #showName>
+      {{ btnName }}
+    </ng-template>
+  </button>
+</div>
